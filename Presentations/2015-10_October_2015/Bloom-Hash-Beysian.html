@@ -230,7 +230,7 @@ store(&assoc_list, key, value) {
         </section>
         <section>
           <section>
-            <h2>Hashing Algorythm</h2>
+            <h2>Hashing Algorithm</h2>
             <ol>
               <li>Find a good pseudo random number generator</li>
               <li>Seed it with the key</li>
@@ -238,6 +238,28 @@ store(&assoc_list, key, value) {
               <li>Divide it by the number of buckets</li>
               <li>The remainder is the index</li>
             </ol>
+            </section>
+            <section>
+              <h2>Notes</h2>
+              <ul>
+                <li><a href="http://stackoverflow.com/questions/11214270/what-hashing-function-algorithm-does-perl-use">How does perl hashing work.</a></li>
+              </ul>
+            </section>
+        
+            <section>
+              <h2>Code</h2>
+<pre><code>
+    my %hash;
+
+    #Give Perl a hint if you know how big it is...
+    # keys(%hash) = 1_000_000;
+
+    foreach my $number ( 1 .. 1_000 ) {
+        $hash{$number}++;
+        print $number, " : ", scalar %hash, "\n";
+    }
+</code></pre>
+            </section>
           </section>
           
           <section>
@@ -332,12 +354,18 @@ store(&assoc_list, key, value) {
         </section>
 
         <section>
+          <section>
           <h2>How does it work?</h2>
           <ol>
             <li>Apply both algorythms to the value</li>
             <li>If they're not both there, then false</li>
             <li> If they are there, then use the longer check</li>
           </ol>
+          </section>
+          <section>
+            <h2>Example</h2>
+            <a href=billmill.org/bloomfilter-tutorial/>Bloomfilter Example</a>
+          </section>
         </section>
             
       </div>
