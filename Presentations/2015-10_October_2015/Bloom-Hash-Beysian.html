@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    
+    <title>Perl Hashes, Bloom Filters, and You</title>
+    
+    <meta name="description" content="Perl Hashes, Bloom Filters, and You">
+    <meta name="author" content="Peter Bowen">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+    
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+
+    <!-- Joint Diagramming css -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/joint.css" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+  
+  <body>
+    
+    <div class="reveal">
+      
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Perl Hashes, Bloom Filters, and You</h2>
+	  <p>
+	    <small>Peter Bowen - Thousand Oaks Perl Mongers</small>
+	  </p>
+          <p>
+            <small>October 21, 2015</small>
+	</section>
+
+        <section>
+          <h2>Perl Hashes</h2>
+          <h3>How do they Work</h3>
+        </section>
+
+	<section>
+          <h2>Attribution</h2>
+          <ul>
+            <li>Mark Jason Dominus</li>
+            <li>Higher Order Perl?</li>
+            <li><a href='http://perl.plover.com/classes/HashHistory/'>Hash History Talk</a></li>
+          </ul>
+          <p>
+            Totally Ripped off from LA.pm in early October 2015
+          </p>
+        </section>
+
+        <section>
+          <h2>Problem...</h2>
+          <ul>
+            <li>We need a good way to quickly look up a value based on a key.</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Arrays to the rescue</h2>
+<pre><code>
+    my @array = ( ... );
+    my $index = 100;
+    my $value = $array[$index];
+    
+</code></pre>
+        </section>
+        <section>
+          <h2>Not what I want!</h2>
+          <ul>
+            <li>Arrays only support integer indexes.</li>
+            <li>I want to be able to use any data, Strings, objects, whatever!</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Linked List?</h2>
+          <div id="linked_list"></div>
+<pre><code>
+contains(assoc_list, key) {
+    while (assoc_list && assoc_list.key != key)
+        assoc_list = assoc_list.next
+    return assoc_list;
+}
+
+get(assoc_list, key) {
+    node = contains(assoc_list, key)
+    if (node) return node.value
+    else      return Null
+}
+
+store(&assoc_list, key, value) {
+    node = contains(assoc_list, key)
+    if (node) node.value = value
+    else {
+        newnode = new Node(key, value);
+        newnode.next = assoc_list
+        assoc_list = newnode
+    }
+}
+
+</code></pre>              
+        </section>
+
+        <section>
+          <h2>Isn't that good enough?</h2>
+          <ul>
+            <li>Scale...</li>
+            <ul>
+              <li>All operations run in <i>O(n)</i></li>
+              <li>Insering <i>n</i> items takes <i>O(n<sup>2</sup>)</i></li>
+            </ul>
+            <li>Not practical for very large lists</li>
+            <li>Everyone knows how to fix this...</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Trees!</h2>
+        </section>
+        <section>
+          <h2>Trees!</h2>
+          <ul>
+            <li>Faster!</li>
+            <ul>
+              <li>Typically <i>O(log n)</i> search time.</li>
+              <li>Inserts are faster at <i>O(n log n)</i> time.</li>
+            </ul>
+            <li>But wait...</li>
+            <ul>
+              <li>Worst case is <i>O(n)</i></li>
+              <li>Surprisingly Common</li>
+              <ul>
+                <li>Sort the keys before storing</li>
+                <li>Stringy trees are slower to search than linked lists</li>
+                <li>Just use and algorythm to fix it!</li>
+              </ul>
+            </ul>
+        </section>
+        <section>
+          <h2>2-3 Tree</h2>
+          <img src="bloom_images/23T.gif" height=500>
+        </section>
+        <section>
+          <h2>Red Black Tree</h2>
+          <img src="bloom_images/RBT.png" height=500>
+        </section>
+        <section>
+          <h2>AVL Tree</h2>
+          <img src="bloom_images/AVL.png" height=500>
+        </section>
+
+        <section>
+          <h2>AARGH!</h2>
+          <h3>Are you kidding me?<h3>
+              <ul>
+                <li>So Complicated</li>
+              </ul>
+        </section>
+
+        <section>
+          <h2>Is there an easier way?</h2>
+          <ul>
+            <li>The solution should be:</li>
+            <ul>
+              <li>Fast</li>
+              <li>Simple to understand and troubleshoot</li>
+              <li>Flexible</li>
+        </section>
+
+        <section>
+          <h2>Hash Tables!</h2>
+        </section>
+        <section>
+          <h2>Hash Tables!</h2>
+          <ul>
+            <li>Algorythms are MUCH easier to understand</li>
+            <li>Better Average Behavior</li>
+            <li>Worst Case is still the same</li>
+            <ul>
+              <li>Rare - Extremely Rare</li>
+            </ul>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Keys</h2>
+          <ul>
+            <li>Almost always strings</li>
+            <li>Non-strings are often converted to strings - hopefully unique</li>
+            <li>Not really useful without unique keys</li>
+        </section>
+
+        <section>
+          <h2>How does it work?</h2>
+          <ol>
+            <li>Create an array of reasonable size</li>
+            <li>Hash the key creating an integer (Magic)</li>
+            <li>Put it into the right bucket</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>But Wait...</h2>
+          <ul>
+            <li>How do you create the hashed value?</li>
+            <li>What happens when more than one key hashes?</li>
+            <li>What happens when you run out of buckets?</li>
+            <li>Is it performant?</li>
+          </ul>
+        </section>
+        <section>
+          <section>
+            <h2>Hashing Algorythm</h2>
+            <ol>
+              <li>Find a good pseudo random number generator</li>
+              <li>Seed it with the key</li>
+              <li>Generate a random number</li>
+              <li>Divide it by the number of buckets</li>
+              <li>The remainder is the index</li>
+            </ol>
+          </section>
+          
+          <section>
+            <h2>Optimizing the Randomizer</h2>
+            <ul>
+              <li>Specific Data Types</li>
+              <li>Generally not worth your time</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <h2>Collisions</h2>
+          <ul>
+            <li>When Storing:</li>
+            <ol>
+              <li>Use a list</li>
+              <li>Append the new item to the front of the list</li>
+            </ol>
+            <li>When Retreiving:</li>
+            <ol>             
+              <li>Find the right bucket</li>
+              <li>Traverse the list looking for the key match</li>
+            </ol>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Scaling the Table</h2>
+          <ol>
+            <li>Double the size of the table</li>
+            <li>Redistribute the data</li>
+          </ol>
+          <ul>
+            <li>Perl stores the hashed value with the key</li>
+            <li>Doubling the table decreases the frequency<li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Performance</h2>
+          <ul>
+            <li>Store and Retrieve are at <i>O(log n)</i></li>
+            <li>Worst Case is <i>O(n)</i> - Although extemely rare</li>
+            <li>Rebuilding takes <i>O(n)</i></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Bloom Filters</h2>
+          <h3>Problem</h3>
+          <p>I have a value that I need to compare to a large set of values.</p>
+        </section>
+        <section>
+          <h2>Use an Array!</h2>
+          <ul>
+            <li>Ummmm... have to traverse the array</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Use a Hash!</h2>
+          <ul>
+            <li>Ummm... Memory Usage?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>A better way</h2>
+
+          <p>Can I quickly eliminate a whole class of values as not being in the list before I have to go and search for them?</p>
+        </section>
+        
+        <section>
+          <h2>Bloom Filter</h2>
+          <p>Space/Time Trade-offs in Hash Coding with Allowable Errors</p>
+          <ul>
+            <li>Rapidly eliminate a value from a set</li>
+            <li>Burton H. Bloom - 1970</li>            
+          </ul>
+        </section>
+
+        <section>
+          <h2>How does it work</h2>
+          <ul>
+            <li>Building the Filter</li>
+            <ol>
+              <li>Create a large binary list</li>
+              <li>Get two hashing algorythms</li>
+              <li>Apply both values to the binary list</li>
+            </ol>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How does it work?</h2>
+          <ol>
+            <li>Apply both algorythms to the value</li>
+            <li>If they're not both there, then false</li>
+            <li> If they are there, then use the longer check</li>
+          </ol>
+        </section>
+            
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+    
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/lodash.min.js"></script>
+    <script src="../../static/js/backbone-min.js"></script>
+    <script src="../../static/js/joint.min.js"></script>
+    
+    <script>
+      
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+      
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+      
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+      
+    </script>
+  </body>
+</html>
