@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Hands on Docker</title>
+
+    <meta name="description" content="Docker">
+    <meta name="author" content="Jed Cunningham">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+
+    <!-- Joint Diagramming css -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/joint.css" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Hands on Docker</h2>
+	  <p>
+	    <small>Jed Cunningham - Thousand Oaks Perl Mongers</small>
+	  </p>
+      <p>
+        <small>November 18, 2015</small>
+	  </p>
+	</section>
+
+        <section>
+          <blockquote>
+              package an application with all of its dependencies
+          </blockquote>
+        </section>
+
+        <section>
+          <h2>Docker Engine</h2>
+          <ul>
+              <li>"lightweight and powerful open source container virtualization technology"</li>
+              <li>Based on libcontainer, which uses cgroups and namespacing</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Virtual Machines</h2>
+          <img src="docker_images/what-is-vm.png" alt="VM (source docker.org)" width="400" />
+          <p><small>Source: <a href="https://www.docker.com/what-docker">What is Docker?</a></small></a></p>
+        </section>
+
+        <section>
+          <h2>Containers</h2>
+          <img src="docker_images/what-is-docker.png" alt="Docker (source docker.org)" width="400" />
+          <p><small>Source: <a href="https://www.docker.com/what-docker">What is Docker?</a></small></a></p>
+        </section>
+
+        <section>
+          <h2>Docker Hub</h2>
+          <ul>
+              <li>Registry hosted by Docker</li>
+              <li>Has <a href="https://hub.docker.com/explore/">official images</a> maintained by author OR community</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Docker architecture</h2>
+          <ul>
+              <li>Client-Server</li>
+              <li>Daemon can be remote</li>
+          </ul>
+          <img src="docker_images/architecture.svg" alt="Docker architecture (source docker.org)" />
+          <p><small>Source: <a href="https://docs.docker.com/introduction/understanding-docker/">Understanding Docker</a></small></a></p>
+        </section>
+
+        <section>
+          <h2>Terms</h2>
+          <ul>
+              <li>Images - Read-only containing OS and some software</li>
+              <li>Dockerfile - Instructions on how to build an image</li>
+              <li>Containers - Isolated instance of an image</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>First Container</h2>
+          <pre><code>$ docker run --rm -ti debian</code></pre>
+        </section>
+
+        <section>
+          <h2><a href="">Official Perl Image</a></h2>
+          <ul>
+              <li>5.22 and 5.20</li>
+              <li>Debian Based</li>
+              <li>656 MB</li>
+              <li>Comes with cpanm</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>First Image</h2>
+          <pre><code>
+          FROM perl:5.22
+          RUN cpanm Mojolicious
+          </pre></code>
+          <pre><code>$ docker build -t mojolicious .</code></pre>
+        </section>
+
+        <section>
+          <h2>Random Generator</h2>
+          <p>Simple web app that generates n random characters</p>
+          <p><a href="https://github.com/InfinityGone/docker-random-generator">Source code</a></p>
+          <h3>Dockerfile</h3>
+          <pre><code>
+          FROM mojolicious
+          COPY random-generator /app/random-generator
+          CMD ["/usr/local/bin/hypnotoad", "-f", "/app/random-generator"]
+          </pre></code>
+
+          <pre><code>$ docker build -t random-generator .</code></pre>
+        </section>
+
+        <section>
+          <h2>Lets run it</h2>
+          <pre><code>$ docker run --rm -p 8080:8080 random-generator</code></pre>
+        </section>
+
+        <section>
+          <h2>Mojopaste</h2>
+          <p>Simple web app that uses file storage</p>
+          <p><a href="https://github.com/InfinityGone/app-mojopaste">Source code</a></p>
+          <h3>Dockerfile</h3>
+          <pre><code>
+          FROM perl:5.22
+
+          COPY cpanfile /app/cpanfile
+          COPY script/mojopaste /app/mojopaste
+
+          RUN cpanm --installdeps /app
+
+          ENV PASTE_DIR /app/pastes
+
+          CMD ["/app/mojopaste", "daemon"]
+          </code></pre>
+
+          <pre><code>$ docker build -t mojopaste .</code></pre>
+        </section>
+
+        <section>
+          <h2>Lets run it</h2>
+          <pre><code>$ docker run -p 3000:3000 --name mypaste -d mojopaste</code></pre>
+        </section>
+
+        <section>
+          <h2>Data Volumes</h2>
+          <p>We want to persist our data outside the container.<br>Our options include:</p>
+          <ul>
+              <li>Volume</li>
+              <li>Host directory</li>
+              <li>Data Volume Container</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Volume</h2>
+          <pre><code>$ docker run -v /app/pastes -p 3000:3000 \
+--name mypaste -d mojopaste</code></pre>
+          <pre><code>$ docker inspect mypaste</code></pre>
+        </section>
+
+        <section>
+          <h2>Easy mode</h2>
+          <pre><code>$ docker run -v $(pwd)/pastes:/app/pastes -p 3000:3000 \
+--name mypaste2 -d mojopaste</code></pre>
+        </section>
+
+        <section>
+          <h2>Data Volume Container</h2>
+          <pre><code>$ docker run -v /app/pastes --name paste-data debian /bin/true</code></pre>
+          <pre><code>$ docker run --volumes-from paste-data -p 3000:3000 \
+--name mypaste3 -d mojopaste</code></pre>
+        </section>
+
+        <section>
+          <h2>Linking containers</h2>
+          <p>Chat app</p>
+          <p><a href="https://github.com/InfinityGone/docker-mojo-pg-chat">Source code</a></p>
+          <p>*No Dockerfile*</p>
+        </section>
+
+        <section>
+          <h2>Start postgres container</h2>
+          <pre><code>$ docker run --name chat-postgres -e POSTGRES_PASSWORD=mysecretpassword \
+-d postgres</code></pre>
+        </section>
+
+        <section>
+          <h2>Start app container</h2>
+          <pre><code>$ docker run --rm -ti --link chat-postgres:postgres \
+-v $(pwd):/app -p 3000:3000 perl bash </code></pre>
+          <p>Next, install dependencies and start the app:</p>
+          <pre><code>$ cpanm Mojo::Pg
+$ morbo /app/chat.pl</code></pre>
+        </section>
+
+        <section>
+          <h2>Image portability</h2>
+          <ul>
+              <li>Self hosted registry</li>
+              <li>save/load with tars</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Questions?</h2>
+        </section>
+
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/lodash.min.js"></script>
+    <script src="../../static/js/backbone-min.js"></script>
+    <script src="../../static/js/joint.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+
+    </script>
+  </body>
+</html>
