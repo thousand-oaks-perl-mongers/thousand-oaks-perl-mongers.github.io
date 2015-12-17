@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>reveal.js – The HTML Presentation Framework</title>
+
+		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
+		<meta name="author" content="Hakim El Hattab">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="../../reveal.js-3.1.0/css/reveal.css">
+		<link rel="stylesheet" href="../../reveal.js-3.1.0/css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="../../reveal.js-3.1.0/lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? '../../reveal.js-3.1.0/css/print/pdf.css' : '../../reveal.js-3.1.0/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="../../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+                          
+			         <section>
+                                     <section>
+                                        <h1>Scheming in Perl</h1>
+                                        <p>
+                                                <small><a href="mailto:mbose@conversantmedia.com">Mayukh Bose</a></small>
+                                        </p>
+                                        <h3>How to write your own little language in perl. We will implement a tiny scheme-based interpreter in perl.</h3>
+                                     </section>
+                          		<section id="themes">
+					<h2>Themes</h2>
+					<p>
+						Adjust presentation theme to suit projector: <br>
+						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
+                                                
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/black.css'); return false;">Black (default)</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/white.css'); return false;">White</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/league.css'); return false;">League</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/sky.css'); return false;">Sky</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/beige.css'); return false;">Beige</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/simple.css'); return false;">Simple</a> <br>
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/serif.css'); return false;">Serif</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/blood.css'); return false;">Blood</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/night.css'); return false;">Night</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/moon.css'); return false;">Moon</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/solarized.css'); return false;">Solarized</a>
+					</p>
+				</section>
+                                     
+				</section>
+				<section>
+					<h2>Why?</h2>
+					<p>
+					  <ul>
+                                            <li>Just because!</li>
+                                            <li>It makes a person a better programmer when one understand what's going on under the covers.</li>
+                                            <li>Gives you an insight about other programming languages as well.</li>                                              
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+				       <h2>Language Basics</h2>
+					<p>
+					  <ul>
+                                            <li>We have a source file that goes through a <br/>
+                                              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;scanner &rarr; lexer &rarr; parser <br />
+                                              and is interpreted or compiled.</li>
+                                            <li>We will examine the functions of each bit briefly in the next few slides.</li>
+                                            <li>For now, we have a picture of how the various bits fit together.</li>                                              
+                                          </ul>  
+					</p>
+				</section>
+
+                                <section>
+                                    <img data-src="flow-chart.png" width="75%">
+                                </section>
+
+				<section>
+					<h2>The Scanner</h2>
+					<p>
+					  <ul>
+                                            <li>Fetches one character at a time from a source file.</li>
+                                            <li>Keeps track of where it is in the file (line and column number).</li>
+                                            <li>May need to be able to back up one character (we'll see why in a bit).</li>
+                                            <li>Largely ignorant of a language's syntax.</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+					<h2>The Lexer</h2>
+					<p>
+					  <ul>
+                                            <li>Breaks the source text into tokens.</li>
+                                            <li>Needs to understand the language syntax somewhat.</li>
+                                            <li>Needs to maintain state.</li>
+                                            <li>E.g. Lexing the statements: <br />
+                                              <section data-markdown>
+                                               ```
+                                                cx = 15.23 * ax + 10;
+                                                print cx;
+					      ```
+                                              </section>
+                                            </li>
+                                            <li>Returns token and token type.</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+                                  <section id="fragments1">
+					<h2>The Lexer - Part II</h2>
+					<p>
+                                          Reads a character and decides what action to take:
+					  <ul>
+                                            <li class="fragment">Whitespace or comment character? Skip characters.</li>
+                                            <li class="fragment">Is is a letter? Then it is an identifier or keyword. Continue to read more letters or numbers until a white space or symbol is reached.</li>
+                                            <li class="fragment">Is it a digit? Then it is a number. Continue to read more digits or decimal point until a non-digit is read. Determine if integer or real number.</li>
+                                            <li class="fragment">Is it a double quote (")? Then it is a string. Continue to read more characters until another " is reached.</li>
+                                          </ul>
+                                          <small><span class="fragment">continued...</span></small>
+					</p>
+                                  </section>
+				</section>
+
+				<section>
+                                  <section id="fragments2">
+				        <h2>The Lexer - Part III</h2>
+                                        <p>
+					  <ul>
+                                            <li>Is it a symbol? See if you can read more to see if it is &lt; vs. &lt;= or + vs. ++ etc. Identify the type of symbol read in (assignment, addition, less than etc.)</li>                                                                          
+                                          </ul>
+                                          <br/><br/>
+                                          <p class="fragment">
+                                            Of course, this is a simple representation and we haven't taken other considerations, such as escape characters (e.g. \), line continuation characters (e.g. \ or 1, 2 etc.), complex numbers etc. into account. Again, a lot of these depend on the language features that we are designing.
+                                            </p>
+					</p>
+                                  </section>
+				</section>
+
+                                <section>
+                                  <img data-src="flow-chart-lexer.png" width="75%" />
+                                </section>
+                                                             
+				<section>
+                                  <section id="fragments3">
+					<h2>The Parser</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Calls the lexer to get one token at a time.</li>
+                                            <li class="fragment">Really understands the language syntax rules and builds a representation of the code, based on tokens and token types.</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+                                                cx = 15.23 * ax + 10;
+					      ```
+                                              </section>
+                                              Checks types and syntax and makes sure this expression makes sense.
+                                            </li>
+                                            <li class="fragment">Builds a tree to evaluate the expression.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments4">
+					<h2>The Parser - II</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment"><font color="red">Parser:</font> Give me a token.</li>
+                                            <li class="fragment"><font color="blue">Lexer:</font> 'cx', which is an identifier.</li>
+                                            <li class="fragment"><font color="red">Parser:</font> cx is declared as numeric. Next token.</li>
+                                            <li class="fragment"><font color="blue">Lexer:</font> '=', which is a symbol.</li>
+                                              <ul>
+                                                <li class="fragment"><font color="red">Parser:</font> Ok, something is assigning to cx. Next token.</li>
+                                                <li class="fragment"><font color="blue">Lexer:</font> '15.23', which is a float.</li>
+                                                <li class="fragment"><font color="red">Parser:</font> Ok, float is assigning to numeric. Next token.</li>
+                                                <li class="fragment"><font color="blue">Lexer:</font> '*', which is a symbol.</li>
+                                                <ul>
+                                                  <li class="fragment"><font color="red">Parser:</font> Ok, wants me to multiply something. Next token.</li>
+                                                </ul>
+                                              </ul>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments5">
+					<h2>The Parser - III</h2>
+					<p>
+					  <ul>
+                                              <ul>
+                                                <ul>
+                                                  <li class="fragment"><font color="blue">Lexer:</font> Next token is 'ax', which is an identifier.</li>
+                                                  <ul>
+                                                    <li class="fragment"><font color="red">Parser:</font> Ok, ax is numeric. Next token.</li>
+                                                    <li class="fragment"><font color="blue">Lexer:</font> Next token is ';', which is end of statement.</li>
+                                                  </ul>
+                                                  <li class="fragment"><font color="red">Parser:</font> Ok, I'll get the value of 'ax' from symbol table.</li>
+                                                </ul>
+                                                <li class="fragment"><font color="red">Parser:</font> Ok, I'll now multiply 15.23 and ax.</li>
+                                              </ul>
+                                              <li class="fragment"><font color="red">Parser:</font> Ok, I'll now assign the result of the multiplication to 'cx'.</li>
+                                          </ul>
+                                          <br /></br />
+                                          <p class="fragment">
+                                            As you can see, the parser recursively descends into each stage. It also checks types and syntax rules as it goes.
+                                          </p>
+					</p>
+                                  </section>
+				</section>
+
+				<section>
+                                  <section id="fragments6">
+					<h2>Symbol Table</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Keeps track of symbols (variables and function names), and the types and values that they represent. Usually implemented as a hash table.</li>
+                                            <li class="fragment">For some languages, it needs to be able to distinguish between locally defined symbols and those defined by an earlier routine. (FORTRAN and C are exceptions.)</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+				<section>
+                                  <section id="fragments7">
+					<h2>Designing your own language</h2>
+					<p>
+                                          Why design your own?
+					  <ul>
+                                            <li class="fragment">You get to decide the syntax and features.</li>
+                                            <li class="fragment">Therefore, you get to decide the complexity, or lack thereof.</li>
+                                            <li class="fragment">Perl is a very hard language to lex and parse. Sigils and special variables make it harder.</li>
+                                            <li class="fragment">Have to consider things like operator precedence, 'if' at beginning or end of statement, state of special $ and % variables etc.</li>
+                                            <li class="fragment">By contrast, scheme is a lot easier to lex and parse.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+				<section>
+                                  <section id="fragments8">
+					<h2>Scheme Basics</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Based off of LISP, one of the oldest programming languages aside from FORTRAN (Note the ALL CAPS :))</li>
+                                            <li class="fragment">Language with <span class="fragment">(lots <span class="fragment">(of parenthesis)).</span></span></li>
+                                            <li class="fragment">Simple syntax.</li>
+                                            <li class="fragment">Special characters are only '(', ')', and whitespace. Makes it easy to lex.</li>
+                                            <li class="fragment">No operator precedence. Order of evaluation is enforced by parenthesis.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+                                <section>
+                                  <section id="fragments9">
+					<h2>Scheme Basics - II</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Only two types: atom and list. Atom = scalar in perl. List = array in perl.</li>
+                                            <li class="fragment">In a list, first symbol of the list determines what to do with the rest of the list.<br/>
+                                              <section data-markdown>
+                                               ```
+                                               (+ 1 2 35)
+                                               (display (+ 1 2 (* 4 65)))
+					      ```
+                                              </section>                                              
+                                            </li>
+                                            <li class="fragment">In an atom, we just need to determine if this is a constant or an identifier. If it is an identifier, we look at the symbol table for its value.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+                                <section>
+                                  <section id="fragments10">
+					<h2>tinyScheme</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Only implements a subset of scheme, just for learning purposes. Very little error checking present.</li>
+                                            <li class="fragment">Only numeric type is implemented.</li>
+                                            <li class="fragment">Only a few functions are implemented, but enough to get some work done. More functions can be easily added as needed.</li>
+                                            <li class="fragment">One goal was to not use any perl modules that do not come with a standard distribution and to keep it simple.</li>
+                                            <li class="fragment">NOW ON TO THE IMPLEMENTATION!!!</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>
+
+                                <section>
+                                  <h2>Scanner for tinyScheme</h2>
+                                  <p>
+                                    Scanner?? We don't need no steenkin' scanner for our language. We'll just pass it straight to the lexer to sort it out.
+                                  </p>
+                                </section>
+
+                                <section>
+                                  <section id="fragments11">
+					<h2>Lexer for tinyScheme</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Replace '(' and ')' in the string with ' ( ' and ' ) '.</li>
+                                            <li class="fragment">Split string by whitespace into an array and return that array.</li>
+                                            <li class="fragment">That's all there is to it (the beauty of simple syntax and very few special characters.)</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+                                <section>
+                                  <section id="fragments12">
+					<h2>Parser for tinyScheme</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Go through array items.</li>
+                                            <ul>
+                                              <li class="fragment">If item is '(', create a new array and read more tokens until you hit ')', then return the array created.</li>
+                                              <li class="fragment">Otherwise, simply return the item read in.</li>
+                                            </ul>
+                                            <li class="fragment">Basically creates arrays of arrays.</li>
+                                            <li class="fragment">Order of evaluation is already determined due to parenthesis.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+                                <section>
+                                  <section id="fragments13">
+					<h2>Evaluator for tinyScheme</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Takes two arguments (expression and symbol table object.)</li>
+                                            <li class="fragment">Recursive (see recursive)</li>
+                                            <li class="fragment">First thing it does is check if the expression is a list or an atom.</li>
+                                            <li class="fragment">If atom, check if it is a numeric constant or a token.</li>
+                                            <ul>
+                                              <li class="fragment">If numeric constant, return its value.</li>
+                                              <li class="fragment">If token, look up its value in the symbol table object and return that.</li>
+                                            </ul>
+                                            <li class="fragment">If list, see next slide.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section> 
+
+                                <section>
+                                  <section id="fragments14">
+					<h2>Evaluator for tinyScheme</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">For a list, the first item determines the action to take with the rest of the items in the list.</li>
+                                            <li class="fragment">We just pop the first item off the list and examine it and determine what action to take.</li>
+                                            <li class="fragment">There are 6 cases which must be handled differently (these are called special forms).There is also a general form. So, we have a total of 7 different forms.</li>
+                                            <li class="fragment">We will see how to handle each in turn.</li>
+                                          </ul>
+                                          <br />
+                                          <a class="fragment" href="#" class="navigate-down">
+							<img width="90" height="120" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Down arrow">
+					  </a>
+					</p>
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #1</h3>
+                                    <p>
+                                      If the first item is 'quote', simply return the list unevaluated. <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (quote 1 2 ax)
+                                      </code></pre>
+                                    </p>
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #2</h3>                                    
+                                    <p>
+                                      If the first item is 'define', then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (define var expression)
+                                      </code></pre>
+                                      Pop the var and expression from the array. Recursively evaluate expression and then set var in the symbol table
+                                      to the result of the expression.                                              
+                                    </p>
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #3</h3>
+                                    <p>
+                                      If the first item is 'set!', then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (set! var expression)
+                                      </code></pre>
+                                      Similar to handling define, except that it doesn't create a new variable in the symbol table, only replaces an
+                                      existing symbol.<br /><br />
+                                      Also note that ! has no special meaning in scheme. Therefore the "!" in "set!" is merely part of the keyword.
+                                    </p> 
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #4</h3>
+                                    <p>
+                                      If the first item is 'if', then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (if condition true_exp false_exp)
+                                      </code></pre>
+                                      Pop the condition, true_exp and false_exp from the array. Then, recursively evaluate the value of condition and
+                                      depending on the return value, evaluate true_exp or false_exp.
+                                    </p> 
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #5</h3>
+                                    <p>
+                                      If the first item is 'begin', then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (begin exp exp ...)
+                                      </code></pre>
+                                      Simply read the rest of the array items in a for loop and evaluate each one, then return the value of the last one.
+                                    </p> 
+                                  </section>
+                                  <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>Special Form #6</h3>
+                                    <p>
+                                      If the first item is 'lambda', then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (lambda (args) exp)
+                                      </code></pre>
+                                      Return an anonymous subroutine that creates a new symbol table based on the args and evaluates the expression.
+                                    </p> 
+                                  </section>
+                                 <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <h3>General Form</h3>
+                                    <p>
+                                      If the first item is none of the above, then it is of the form: <br />
+                                      <pre><code class="hljs" data-trim contenteditable>
+                                          (proc_name arg1 arg2 ...)
+                                      </code></pre>
+                                      Evaluate this recursively (which will fetch it out of the symbol table) and pass it the arguments.
+                                    </p> 
+                                  </section>
+
+                                 <section>
+				    <h2>Evaluator for tinyScheme</h2>
+                                    <p>
+                                      And that's all there is for the evaluator!<br/>
+                                          <a class="fragment" href="#" class="navigate-down">
+							<img width="90" height="120" data-src="https://s3.amazonaws.com/hakim-static/reveal-js/arrow.png" alt="Up arrow" style="transform: rotate(180deg); -webkit-transform: rotate(180deg);">
+					  </a>
+                                    </p> 
+                                  </section>
+                                 
+				</section>
+
+				<section>
+                                  <section id="fragments15">
+					<h2>Symbol Table for tinyScheme</h2>
+					<p>
+                                          This is implemented as a linked list of objects, each of which has a couple of member variables and methods.
+					  <ul>
+                                            <li class="fragment">One member variable is a hash and this keeps track of symbols and their values.</li>
+                                            <li class="fragment">Another member variable is a reference to an object's parent.</li>
+                                            <li class="fragment">The object has an add() method, which simply adds/updates its hash member variable.</li>
+                                            <li class="fragment">The object has a find() method to find the value corresponding to a symbol. (see below &darr;)</li>
+                                          </ul>
+					</p>
+                                  </section>
+                                  <section id="fragments16">
+                                        <h2>Symbol Table for tinyScheme</h2>
+                                        <p>
+                                          The find() method works like this:
+                                          <ul>
+                                            <li class="fragment">First, look at the hash member variable to see if we can find the symbol in it.</li>
+                                            <li class="fragment">If not found in own hash member variable, see if the object has a parent and recursively call the parent's find() method.</li>
+                                            <li class="fragment">If the object has no parent, we've reached the end of the symbol table and not found the symbol. Throw an error in this case.</li>
+                                            <li class="fragment">This is how we can get local variables to override global variables and implement a hierarchy of variable scopes.</li>
+                                          </ul>
+                                        <p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments17">
+					<h2>tinyScheme Globals</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Implement a hash of some basic global functions for scheme (such as <font color="red"><b>+</b></font>,<font color="red"><b> -</b></font>, <font color="red"><b>*</b></font>, <font color="red"><b>/</b></font>, <font color="red"><b>and</b></font>, <font color="red"><b>or</b></font>, <font color="red"><b>not</b></font>, <font color="red"><b>&lt;</b></font>, <font color="red"><b>&lt;=</b></font> etc.). Not much error checking here.</li>
+                                            <li class="fragment">Not all functions need to be implemented in perl. For instance, with <font color="red"><b>&lt;</b></font>, <font color="red"><b>=</b></font>, <font color="red"><b>or</b></font> and <font color="red"><b>not</b></font>, we can implement the rest of the comparison operators in tinyScheme.</li>
+                                            <ul>
+                                              <li class="fragment"><font color="red"><b>&gt;</b></font> can be implemented as (<font color="red"><b>not &lt;</b></font>)</li>
+                                              <li class="fragment"><font color="red"><b>&lt;=</b></font> can be implemented as (<font color="red"><b>&lt; or =</b></font>)</li>
+                                              <li class="fragment"><font color="red"><b>&gt;=</b></font> can be implemented as (<font color="red"><b>not &lt;</b></font>) etc.</li>
+                                            </ul>
+                                          </ul>
+					</p>
+                                  </section>
+                                </section>                                
+
+				<section>
+                                  <section id="fragments18">
+					<h2>tinyScheme Interpreter</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Creates a global symbol table object and copies the scheme globals into it.</li>
+                                            <li class="fragment">Reads a line from standard input.</li>
+                                            <li class="fragment">Calls the parser to convert it to an array of arrays.</li>
+                                            <li class="fragment">Calls the evaluator and passes it the array and global symbol table object. Prints out the returned value.</li>
+                                            <li class="fragment">That's all there is to it!</li>
+                                          </ul>
+					</p>
+                                  </section>
+                                </section>
+
+				<section>
+                                  <section id="fragments19">
+					<h2>Does it actually work?</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Simple arithmetic.</li>
+                                            <li class="fragment">Define variable and use in expression.</li>
+                                            <li class="fragment">Define a simple function.</li>
+                                            <li class="fragment">Define a function that calls a previously declared function.</li>
+                                            <li class="fragment">Define a recursive function (to simulate looping).</li>
+                                            <li class="fragment">Equation solver using Newton-Raphson.</li>
+                                            <li class="fragment">Implement comparison operators in tinyScheme.</li>
+                                          </ul>
+					</p>
+                                  </section>
+                                </section>
+
+				<section>
+                                  <section id="fragments20">
+					<h2>What does it not do?</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Need to add more functions to implement more of scheme as needed.</li>
+                                            <li class="fragment">Uses 1 and 0 instead of <font color="red">true</font> and <font color="red">false</font> constants (hey, my language, my rules!). Can be easily fixed to do that, if needed.</li>
+                                            <li class="fragment">Does NOT do tail recursion, so can blow stack.</li>
+                                            <li class="fragment">No string type, though that can be easily added.</li>
+                                            <li class="fragment">No error checking, no comments, but it works!</li>
+                                          </ul>
+					</p>
+                                  </section>
+                                </section>                                
+
+				<section>
+					<h2>Links and References</h2>
+					<p>
+					  <ul>
+                                            <li><a href="http://www.catb.org/esr/faqs/hacker-howto.html">How to Become a Hacker</a> by Eric Raymond</li>
+                                            <li><a href="http://norvig.com/lispy.html">How to Write a Lisp Interpreter in Python</a> by H. Peter Norvig</li>
+                                          </ul>
+					</p>
+                                </section>                                
+
+				<section>
+					<h2>Questions/Comments?</h2>
+					<p>
+					</p>
+                                </section>                                
+                                
+                                
+
+                                <!--
+				<section id="transitions">
+					<h2>Transition Styles</h2>
+					<p>
+						You can select from different transitions, like: <br>
+						<a href="?transition=none#/transitions">None</a> -
+						<a href="?transition=fade#/transitions">Fade</a> -
+						<a href="?transition=slide#/transitions">Slide</a> -
+						<a href="?transition=convex#/transitions">Convex</a> -
+						<a href="?transition=concave#/transitions">Concave</a> -
+						<a href="?transition=zoom#/transitions">Zoom</a>
+					</p>
+				</section>
+
+				<section id="themes">
+					<h2>Themes</h2>
+					<p>
+						reveal.js comes with a few themes built in: <br>
+						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
+                                                <!--
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/black.css'); return false;">Black (default)</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/white.css'); return false;">White</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/league.css'); return false;">League</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/sky.css'); return false;">Sky</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/beige.css'); return false;">Beige</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/simple.css'); return false;">Simple</a> <br>
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/serif.css'); return false;">Serif</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/blood.css'); return false;">Blood</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/night.css'); return false;">Night</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/moon.css'); return false;">Moon</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','../../reveal.js-3.1.0/css/theme/solarized.css'); return false;">Solarized</a>
+					</p>
+				</section>  -->
+
+			</div>
+
+		</div>
+
+		<script src="../../reveal.js-3.1.0/lib/js/head.min.js"></script>
+		<script src="../../reveal.js-3.1.0/js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: '../../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: '../../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: '../../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: '../../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+					{ src: '../../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
