@@ -1,0 +1,776 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Mail Testing Utility</title>
+
+<link rel="stylesheet" type="text/css" href="http://manicreader.com/reset.css" />
+
+<style type="text/css">
+/* NOTE to self in case I look at this later. I'm going to violate convention
+   here and use a lot of inline CSS because I'm planning to display file
+   contents and lines of code that will have one-off formatting.
+
+   Also, I was in a hurry when I did this, so there might be copious use of
+   &nbsp; and such. */
+
+#embedded {display: none;}
+
+#container
+{
+  width: 780px;
+  height: 560px;
+  background: #fff0e0;
+  margin: 20px auto 0px auto;
+  padding: 0px 0px 0px 0px;
+  border: 1px solid #8f8f8f;
+}
+
+pre {font: normal normal normal 15px/17px consolas, "bitstream vera sans mono", monospace;}
+tt  {font: normal normal normal 16px/22px consolas, "bitstream vera sans mono", monospace; color: #684430;} /* brown -  variable names  #9e7460 */
+i   {font: normal normal normal 16px/22px consolas, "bitstream vera sans mono", monospace; color: #bb3000;} /* orange - constants #ee6000  */
+b   {font: normal normal normal 16px/22px consolas, "bitstream vera sans mono", monospace; color: #3070ee;} /* blue -   keywords  */
+s   {font: normal normal normal 20px/24px calibri, sans-serif; text-decoration: none; color: #206050;}      /* green -  comments  #408080; */
+u   {font: normal normal normal 16px/22px consolas, "bitstream vera sans mono", monospace; text-decoration: none; color: #c00020;} /* red -    numbers */
+del {font: normal normal normal 19px/22px consolas, "bitstream vera sans mono", monospace; text-decoration: none; color: #0050c0;} /* turquoise */
+ins {font: normal normal normal 16px/22px consolas, "bitstream vera sans mono", monospace; text-decoration: none; color: #848076; background: #fff0e0;}  /* gray -   strings  background: #fff0e0; */
+dfn {font: normal normal normal 24px/32px candara, sans-serif; color: #0066aa; text-decoration: none;}  /* Presented By */
+
+p {font: normal normal normal 16px/18px consolas, "bitstream vera sans mono", monospace;}
+p s {margin: 0px 0px 0px 0px; font: normal normal normal 15px/17px consolas, "bitstream vera sans mono", monospace;}
+
+h2
+{
+  width: 700px;
+  color: #0066aa;
+  background: #dfdbd2;
+  text-align: center;
+  word-spacing: 8px;
+  letter-spacing: 2px;
+  margin: 20px auto 20px auto;
+  border-width: 2px 2px 2px 2px;
+  border-style: outset inset inset outset;
+  border-color: #d0d0d0 #f0f0f0 #f0f0f0 #d0d0d0;
+  font: normal normal normal 26px/40px calibri, sans-serif;
+}
+h2 s {color: #909090;}
+
+hr {margin: 16px auto 0px auto; width: 90%; height: 2px;}
+
+.subzone
+{
+  float: left;
+  font-weight: bold;
+  border-width: 2px 2px 2px 2px;
+  border-style: outset inset inset outset;
+  border-color: #d0d0d0 #f0f0f0 #f0f0f0 #d0d0d0;
+  margin: 0px -2px 0px 0px;
+}
+
+.pageno
+{
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+.important
+{
+  width: 540px;
+  height: 24px;
+  margin: 20px auto 0px auto;
+  letter-spacing: 1px; word-spacing: 3px; text-align: center;
+  font: normal normal bold 20px/24px candara, sans-serif;
+}
+
+.slightlybigger
+{
+  width: 540px;
+  text-align: center;
+  margin: 0px auto 0px auto;
+  font: normal normal normal 17px/19px candara, "bitstream vera sans mono", monospace;
+}
+
+.left
+{
+  width: 160px;
+  float: left;
+  padding: 10px 0px 10px 10px;
+  border-width: 2px 0px 0px 2px;
+  border-style: outset inset inset outset;
+  border-color: #e0e0e0 #d8d8d8 #d8d8d8 #e0e0e0;
+}
+.right
+{
+  width: 440px;
+  float: left;
+  padding: 10px 0px 10px 10px;
+  border-width: 2px 2px 0px 2px;
+  border-style: outset inset inset outset;
+  border-color: #e0e0e0 #e8e8e8 #e8e8e8 #e0e0e0;
+}
+
+.fbold        {font-weight: bold;}
+.grayish      {color: #646056;}
+.turquoise    {color: #0066aa;}
+.fontSans2432 {font: normal normal normal 24px/32px calibri, sans-serif;}
+.fontSans2828 {font: normal normal normal 28px/28px calibri, sans-serif;}
+
+.fleft {float: left;}
+.w410  {width: 410px;}
+.w696  {width: 696px;}
+
+.h364  {height:364px;}
+
+talignLeft {text-align: left;}
+
+/* =============================== PAGE 0 =============================== */
+#credits
+{
+  width: 580px;
+  height: 200px;
+  text-align: center;
+  margin: 70px auto 0px auto;
+  padding: 0px 12px 0px 0px;
+  font: normal normal normal 20px/32px candara, sans-serif;
+}
+#credits ul
+{
+  list-style: none;
+  margin: 0px 0px 0px 0px;
+  padding: 0px 0px 0px 0px;
+}
+#credits li {margin: 32px 0px 0px 0px; font: normal normal normal 19px/31px candara, sans-serif;}
+#navigation
+{
+  margin: 20px 0px 0px 0px;
+  font: normal normal normal 16px/18px consolas, monospace;
+}
+
+/* =============================== PAGE 1 =============================== */
+#page1body
+{
+  width: 660px; height: 440px;
+  margin: 0px auto 0px auto;
+  padding: 0px 0px 0px 0px;
+  font: normal normal normal 24px/24px calibri, sans-serif;
+}
+#page1body ul {width: 660px; margin: 60px auto 0px auto; padding: 0px 0px 0px 20px;}
+#page1body ul li {margin: 30px 0px 30px 0px;}
+#page1body ul li s {color: #3070ee; font: normal normal normal 24px/24px calibri, sans-serif;}
+#page1body ul li u {color: #5e3420; font: normal normal normal 24px/24px calibri, sans-serif;}
+
+/* =============================== PAGE 2 =============================== */
+#page2body
+{
+  width: 720px; height: 380px;
+  text-align: center;
+  margin: 0px auto 0px auto;
+  font: normal normal normal 17px/23px consolas, "bitstream vera sans mono", monospace;
+}
+#page2body pre {text-align: left; margin: 20px 0px 0px 0px; padding: 0px 0px 0px 20px;}
+#page2body h3
+{
+  width: 700px;
+  color: #000000;
+  text-align: center;
+  letter-spacing: 1px; word-spacing: 4px;
+  margin: 10px 0px 0px 0px;
+  font: normal normal normal 18px/18px calibri, sans-serif;
+}
+
+/* =============================== PAGE 3 =============================== */
+#page3body
+{
+  width: 640px;
+  margin: 12px auto 0px auto;
+  padding: 0px 0px 0px 20px;
+  font: normal normal normal 17px/19px consolas, "bitstream vera sans mono", monospace;
+}
+#page3body h3
+{
+  color: #0066aa;
+  text-align: center;
+  letter-spacing: 1px; word-spacing: 4px;
+  margin: 24px auto 0px auto;
+  font: normal normal normal 20px/20px calibri, sans-serif;
+}
+.page3spacer {font: normal normal normal 1px/1px consolas, "bitstream vera sans mono", monospace; margin: 16px 0px 0px 0px;}
+
+/* =============================== PAGE 4 =============================== */
+#page41 {margin: 0px 0px 0px 0px; padding: 6px 0px 0px 0px;}
+#page41 p {margin: 0px 0px -2px 0px;}
+#page4body {margin: 0px auto 0px auto; width: 576px; height: 440px;}
+
+/* =============================== PAGE 5 =============================== */
+#page51 {padding: 6px 0px 0px 40px;}
+#page51 p {margin: 0px 0px 2px 0px;}
+#page5body {width: 700px; height: 440px; margin: 0px auto 0px auto;}
+#page51 .page51minus1 {margin: 0px 0px -1px 0px;}    /* Text line margin adjustment. */
+#page51 .page51minus2 {margin: 0px 0px -2px 0px;}    /* Text line margin adjustment. */
+#page51 .page51plus12 {margin: 0px 0px 12px 0px;}    /* Text line margin adjustment. */
+
+/* =============================== PAGE 6 =============================== */
+#page61 {padding: 0px 0px 0px 20px;}
+#page6body {margin: -12px auto 0px auto; width: 720px; height: 440px;}
+.page6spacer {font: normal normal normal 1px/1px consolas, "bitstream vera sans mono", monospace; margin: 10px 0px 0px 0px;}
+.page6minus3 {margin: 0px 0px -3px 0px;}
+.superbold {font: normal normal bold 20px/20px consolas, "bitstream vera sans mono", monospace;}
+
+</style>
+
+<script type="text/javascript">
+// ----------------------------------------------
+// Generic key down event handler. All key presses come here.
+function KeyDown(evt)
+{
+  var oEvt = evt || window.event;
+  var retVal = true; var bubbleCanc = false;
+
+  // Grab the keycode, set the alt, ctl and shift flags
+  // and convert the keycode to a character.
+  if (oEvt.modifiers)
+  {
+    //iCode = oEvt.charCode;
+    iCode = oEvt.which;
+    iAlt  = oEvt.modifiers & Event.ALT_MASK;
+    iCtl  = oEvt.modifiers & Event.CONTROL_MASK;
+    iShft = oEvt.modifiers & Event.SHIFT_MASK;
+    iChr  = String.fromCharCode(iCode);
+  }
+  else
+  {
+    iCode = oEvt.keyCode;
+    iAlt  = oEvt.altKey;
+    iCtl  = oEvt.ctrlKey;
+    iShft = oEvt.shiftKey;
+    iChr  = String.fromCharCode(iCode);
+  }
+
+  if (iCode == 36)   // The HOME key.
+  {
+    $('textcontainer').currentPage = 'page0';
+    setTimeout(function() {$('textcontainer').innerHTML = $('page0').innerHTML;}, 0);
+  }
+
+  if (iCode == 35)   // The END key.
+  {
+    $('textcontainer').currentPage = 'page6';
+    setTimeout(function() {$('textcontainer').innerHTML = $('page6').innerHTML;}, 0);
+ }
+
+  if (iCode == 112)  // The F1 key.
+  {
+    setTimeout(function()
+    {
+      alert(
+        "Navigation:\n\n" +
+        "  •	Right Arrow or ‘N’ moves to the next page.\n" +
+        "  •	Left Arrow or ‘P’ moves to the previous page.\n" +
+        "  •	Home moves to the first page.\n" +
+        "  •	End moves to the last page (before the code example).");
+    }, 0);
+
+    window.onhelp = function () { return (false); };
+    document.onhelp = function () { return (false); };
+  }
+
+  if (iChr == 'N') {setTimeout(function() {turnPage('next');}, 0);}
+  if (iChr == 'P') {setTimeout(function() {turnPage('prev');}, 0);}
+
+  if (iCode == 39) {setTimeout(function() {turnPage('next');}, 0);}
+  if (iCode == 37) {setTimeout(function() {turnPage('prev');}, 0);}
+
+  if (iCode == 34) {setTimeout(function() {turnPage('next');}, 0);}
+  if (iCode == 33) {setTimeout(function() {turnPage('prev');}, 0);}
+
+  return exitAction(oEvt, retVal);
+}
+
+// ----------------------------------------------
+// Generic key up event handler. All key releases come here.
+// All that we are looking for is to turn off the alt, ctl
+// and shift flags (if applicable).
+function KeyUp(evt)
+{
+  var oEvt = evt || window.event;
+  iAlt  = oEvt.altKey;
+  iCtl  = oEvt.ctrlKey;
+  iShft = oEvt.shiftKey;
+
+  return exitAction(oEvt, true);
+}
+
+// ----------------------------------------------
+function exitAction(oEvt, TorF)
+{
+  if (oEvt.stopPropagation)
+  {
+    if (! TorF) {oEvt.stopPropagation();}
+  }
+
+  if (oEvt.preventDefault)
+  {
+    if (! TorF) {oEvt.preventDefault();}
+  }
+
+  if (oEvt.returnValue)
+  {
+    oEvt.returnValue  = TofF;
+    oEvt.cancelBubble = !TorF;
+  }
+
+  return TorF;
+}
+
+// ----------------------------------------------
+function turnPage(direction)
+{
+  if (direction == 'next')
+  {
+    if ($('textcontainer').currentPage)
+    {
+      if ($('textcontainer').currentPage == 'page0')
+      {
+        $('textcontainer').currentPage = 'page1';
+        $('textcontainer').innerHTML = $('page1').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page1')
+      {
+        $('textcontainer').currentPage = 'page2';
+        $('textcontainer').innerHTML = $('page2').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page2')
+      {
+        $('textcontainer').currentPage = 'page3';
+        $('textcontainer').innerHTML = $('page3').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page3')
+      {
+        $('textcontainer').currentPage = 'page4';
+        $('textcontainer').innerHTML = $('page4').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page4')
+      {
+        $('textcontainer').currentPage = 'page5';
+        $('textcontainer').innerHTML = $('page5').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page5')
+      {
+        $('textcontainer').currentPage = 'page6';
+        $('textcontainer').innerHTML = $('page6').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page6')
+      {
+        setTimeout(function() {window.location.href = 'http://manicreader.com/perl/mailtalkcode.html';}, 0);
+      }
+    }
+    else
+    {
+      $('textcontainer').currentPage = 'page1';
+      $('textcontainer').innerHTML = $('page1').innerHTML;
+    }
+  }
+
+  else
+  {
+    if ($('textcontainer').currentPage)
+    {
+      if ($('textcontainer').currentPage == 'page0')
+      {
+        setTimeout(function() {alert("You are on the first page.");}, 0);
+      }
+
+      if ($('textcontainer').currentPage == 'page1')
+      {
+        $('textcontainer').currentPage = 'page0';
+        $('textcontainer').innerHTML = $('page0').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page2')
+      {
+        $('textcontainer').currentPage = 'page1';
+        $('textcontainer').innerHTML = $('page1').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page3')
+      {
+        $('textcontainer').currentPage = 'page2';
+        $('textcontainer').innerHTML = $('page2').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page4')
+      {
+        $('textcontainer').currentPage = 'page3';
+        $('textcontainer').innerHTML = $('page3').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page5')
+      {
+        $('textcontainer').currentPage = 'page4';
+        $('textcontainer').innerHTML = $('page4').innerHTML;
+      }
+
+      else if ($('textcontainer').currentPage == 'page6')
+      {
+        $('textcontainer').currentPage = 'page5';
+        $('textcontainer').innerHTML = $('page5').innerHTML;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------
+function getCssRule(ruleName)
+{
+  var rtnval = 0;
+
+  ruleName = ruleName.toLowerCase();
+
+  if (document.styleSheets)
+  {
+    for (var i = 0; i < document.styleSheets.length; i++)
+    {
+      // Loop for every style sheet in the document.
+      var ii = 0;
+      var cssRule = false;
+      var styleSheet = document.styleSheets[i];          // Get the current Stylesheet
+
+      do
+      {
+        // For each rule in stylesheet
+
+        if (styleSheet.cssRules)
+        {
+          // Does browser uses 'cssRules'?
+          cssRule = styleSheet.cssRules[ii];
+        }
+        else
+        {
+          // Otherwise assume that browser uses 'rules'.
+          cssRule = styleSheet.rules[ii];
+        }
+
+        if (cssRule)
+        {
+          if (cssRule.selectorText.toLowerCase() == ruleName)
+          {
+            // If here, we have found the rule we are looking for.
+            rtnval = cssRule;
+            break;
+          }
+        }
+
+        ii++;
+      } while (cssRule)
+
+      if (rtnval) {break;}
+    }
+  }
+
+  return rtnval;
+}
+
+// ----------------------------------------------
+function $(elementID) {return document.getElementById(elementID);}
+
+// ----------------------------------------------
+function initpage()
+{
+  document.onkeyup   = KeyUp;
+  document.onkeydown = KeyDown;
+}
+
+</script>
+</head>
+
+<body onload="initpage();">
+  <div id="container">
+    <div id="textcontainer">
+    </div>
+  </div>
+
+
+<div id="embedded">
+
+  <div id="page0">
+    <h2 class="fbold">An Email Testing Utility</h2>
+    <div id="credits" style="width: 696px; height: 364px;">
+      <ul style="margin: 80px 0px 40px 0px;">
+        <li><span class="fontSans2828">Presented by Barry Brevik</span></li>
+      </ul>
+      <ul>
+        <li><span class="fontSans2432">This Presentation Located at:<br /><a href="http://manicreader.com/perl/mailtalk.html">http://manicreader.com/perl/mailtalk.html</a></span></li>
+        <li><span class="fontSans2432">Presentation Code Located At:<br /><a href="http://manicreader.com/perl/mailtalkcode.html">http://manicreader.com/perl/mailtalkcode.html</a></span></li>
+      </ul>
+
+      <!-- This is the 'navigation' blurb at the bottom of the slide. -->
+      <div id="navigation" style="width: 410px; margin: 30px auto 0px auto;">
+        <div class="fleft fbold">Navigation:</div>
+        <div style="float: left; text-align: left; margin: 0px 0px 0px 10px;">
+          <p>Right-Arrow&nbsp;or N = Next Page.</p>
+          <p>Left-Arrow&nbsp;&nbsp;or P = Previous Page.</p>
+          <p>Home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= First Page.</p>
+          <p>End&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= Last Page.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="page1">
+    <h2>Reference Materials</h2>
+    <div id="page1body">
+      <ul>
+        <li><s>Book</s>:&ensp;&quot;<u>Internet Email Protocols</u>&quot;&ensp;by Kevin Johnson,<br />&emsp;&emsp;&emsp;Addison-Wesley ISBN 0-20143-288-9.</li>
+        <li><s>Book</s>:&ensp;&quot;<u>Network Programming with Perl</u>&quot;&ensp;by Lincoln D. Stein,<br />&emsp;&emsp;&emsp;Addison-Wesley ISBN 0-0201-61571-1.</li>
+        <li><s>Book</s>:&ensp;&quot;<u>DNS and BIND</u>&quot;&ensp;by Paul Albitz & Cricket Liu, O'Reilly<br />&emsp;&emsp;&emsp;ISBN 1-56592-236-0.</li>
+        <li><s>Module</s>:&ensp;&quot;<u><span style="font-family: consolas;">Net::DNS POD</span></u>&quot;.&ensp;Documentation is a bit thin, IMO.</li>
+        <li><s>Various Internet Sites</s>:&ensp;For example,<br />
+            <p style="font-size: 21px; font-family: consolas; margin: 16px 0px 0px 20px;"><a href="http://search.cpan.org/~olaf/Net-DNS-0.68/lib/Net/DNS.pm">
+             http://search.cpan.org/dist/Net-DNS/lib/Net/DNS.pm</a></p></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="page2">
+    <h2 style="width: 710px;">Typical DNS Zone File</h2>
+    <div id="page2subheader" style="width: 710px; height: 70px; margin: 0px auto 10px auto; text-align: center; font: normal normal normal 13px/21px consolas, monospace;">
+      <div style="width: 724px; height: 26px; margin: 0px auto 0px auto;">
+        <div class="subzone" style="width: 130px; background: #eae6dd;">
+          Operating System</div>
+        <div class="subzone" style="width: 206px; background: #eae6dd;">
+          Location</div>
+        <div class="subzone" style="width: 170px; background: #eae6dd;">
+          Forward Lookup Zone</div>
+        <div class="subzone" style="width: 200px; background: #eae6dd;">
+          Reverse Lookup Zone</div>
+      </div>
+  
+      <div style="width: 724px; height: 26px; margin: 0px auto 0px auto;">
+        <div class="subzone" style="width: 130px; margin: -3px -2px 0px 0px; background: #eae6dd;">
+          unix</div>
+        <div class="subzone" style="width: 206px; margin: -3px -2px 0px 0px; background: #f8efe4;">
+          /var/named/</div>
+        <div class="subzone" style="width: 170px; margin: -3px -2px 0px 0px; background: #f8efe4;">
+          db.obedience4life.com</div>
+        <div class="subzone" style="width: 200px; margin: -3px -2px 0px 0px; background: #f8efe4;">
+          db.12.176.203</div>
+      </div>
+
+      <div style="width: 724px; height: 26px; margin: 0px auto 0px auto;">
+        <div class="subzone" style="width: 130px; margin: -6px -2px 0px 0px; background: #eae6dd;">
+          Windows</div>
+        <div class="subzone" style="width: 206px; margin: -6px -2px 0px 0px; background: #f8efe4;">
+          %systemroot%\system32\dns\</div>
+        <div class="subzone" style="width: 170px; margin: -6px -2px 0px 0px; background: #f8efe4;">
+          obedience4life.dns</div>
+        <div class="subzone" style="width: 200px; margin: -6px -2px 0px 0px; background: #f8efe4;">
+          203.176.12.in-addr.arpa.dns</div>
+      </div>
+    </div>
+
+    <div id="page2body">
+      <h3>Each entry in the file below is referred to as a '<span class="turquoise fbold">Resource Record</span>'.</h3>
+      <hr style="margin: 10px auto -10px auto;" />
+      <pre>
+obedience4life.com. 10800 IN SOA obedience4life.com. root.obedience4life.com. (
+                              20110129 ; Serial
+                              10800    ; Refresh
+                              3600     ; Retry
+                              604800   ; Expire
+                              3600 )   ; Minimum TTL
+
+obedience4life.com.           10800 IN TXT "v=spf1 a mx -all"
+obedience4life.com.           10800 IN A 12.176.203.134
+obedience4life.com.           10800 IN MX 100 INBOUND.OBEDIENCE4LIFE.COM.NETSOLMAIL.NET.
+<span style="font-weight: bold; color: #0050c0;">obedience4life.com.           10800 IN NS ns1.glacieraudio.com.</span>
+<span style="font-weight: bold; color: #0050c0;">obedience4life.com.           10800 IN NS ns1.mvllc.net.</span>
+<span style="font-weight: bold; color: #0050c0;">obedience4life.com.           10800 IN NS ns1.otlamp.com.</span>
+ftp.obedience4life.com.       10800 IN A 12.176.203.134
+localhost.obedience4life.com. 10800 IN A 127.0.0.1
+MAIL.obedience4life.com.      10800 IN CNAME MAIL.OBEDIENCE4LIFE.COM.NETSOLMAIL.NET.
+SMTP.obedience4life.com.      10800 IN CNAME SMTP.OBEDIENCE4LIFE.COM.NETSOLMAIL.NET.
+www.obedience4life.com.       10800 IN A 12.176.203.134
+      </pre>
+    </div>
+  </div>
+
+  <div id="page3">
+    <h2>Basics for Using Net::Dns with Perl</h2>
+    <div id="page3body">
+      <div id="page31">
+        <p><b>use</b> <i>Net</i>::<i>DNS</i>;&nbsp;&nbsp;<s># Place this directive at the top of your code (obviously).</p>
+        <p class="page3spacer">&nbsp;</p>
+        <p style="margin: 0px 0px 0px 0px;"><s># Use the constructor to create a RESOLVER object. Your program can have</s></p>
+        <p style="margin: 0px 0px -3px 0px;"><s># any number of resolvers simultaneously, each keeping it's own state.</s></p>
+        <p><b>my</b> <tt>$resolver</tt> <del>=</del> <i>Net</i>::<i>DNS</i>::<i>Resolver</i> <del>-&gt;</del> <i>new</i>;</p>
+        <p class="page3spacer">&nbsp;</p>
+        <p style="margin: 0px 0px 2px 0px;"><s># Resolver queries return <span class="fbold">DNS PACKET</span> objects. There are 3 query methods:</s></p>
+        <p><s>#&nbsp;<span class="fbold">search</span>&nbsp;-&nbsp;Uses the 'search list' which is a list of domains to be</s></p>
+        <p><s>#&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;searched and which can be present in /etc/resolv.conf</s></p>
+        <p><s>#&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;or possibly in the ENVIRONMENT. On Windows machines it looks</s></p>
+        <p style="margin: 0px 0px 2px 0px;"><s>#&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;for a search list in the REGISTRY.</s></p>
+        <p><s>#&nbsp;<span class="fbold">query</span>&nbsp;&nbsp;-&nbsp;Does not use the search list. If the query name does not have</s></p>
+        <p style="margin: 0px 0px 2px 0px;"><s>#&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;any dots and defnames is true, it appends the default domain.</s></p>
+        <p style="margin: 0px 0px -3px 0px;"><s>#&nbsp;<span class="fbold">send</span>&nbsp;&nbsp;&nbsp;- Neither the searchlist nor the default domain will be used.</s></p>
+        <p style="margin: 2px 0px -4px 0px;"><b>my</b> <tt>$packet</tt> <del>=</del> <tt>$resolver</tt> <del>-&gt;</del> <i>search</i>(<tt>$domain</tt>);</p>
+        <p style="margin: 0px 0px -4px 0px;"><b>my</b> <tt>$packet</tt> <del>=</del> <tt>$resolver</tt> <del>-&gt;</del> <i>query</i>(<tt>$domain</tt>, '<ins>NS</ins>');&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<s># We will use.</s></p>
+        <p><b>my</b> <tt>$packet</tt> <del>=</del> <tt>$resolver</tt> <del>-&gt;</del> <i>send</i>(<tt>$domain</tt>, '<ins>SOA</ins>', '<ins>IN</ins>');&ensp;<s># We will use.</s></p>
+        <p class="page3spacer">&nbsp;</p>
+        <p style="margin: 0px 0px 2px 0px;"><s># A <span class="fbold">PACKET</span> object contains these five data items:</s></p>
+        <p><s># <span class="fbold">header</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= A list of HEADER objects.</s></p>
+        <p><s># <span class="fbold">question</span>&nbsp;&nbsp;&nbsp;=&nbsp;A list of QUESTION objects.</s></p>
+        <p><s># <span class="fbold">answer</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=&nbsp;A <span class="fbold">list</span> of <span class="fbold">RESOURCE RECORD</span> objects.</s></p>
+        <p><s># <span class="fbold">authority</span>&nbsp;&nbsp;=&nbsp;A list of RESOURCE RECORD objects.</s></p>
+        <p><s># <span class="fbold">additional</span>&nbsp;=&nbsp;A list of RESOURCE RECORD objects.</s></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="page4">
+    <h2>A Stripped Down Working Example</h2>
+    <div id="page4body">
+      <div id="page41">
+        <p><b>use</b> <i>strict</i>;</p>
+        <p><b>use</b> <i>warnings</i>;</p>
+        <p><b>use</b> <i>Net</i>::<i>DNS</i>;</p>
+        <br />
+        <p><b>my</b> <tt>$domain</tt>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<del>=</del> '<ins>obedience4life.com</ins>';</p>
+        <p><b>my</b> <tt>$resolver</tt>&ensp;&ensp;&ensp;&ensp;<del>=</del> <i>Net</i>::<i>DNS</i>::<i>Resolver</i> <del>-&gt;</del> <i>new</i>;</p>
+        <p><b>my</b> <tt>$packet</tt>&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;<del>=</del> <tt>$resolver</tt> <del>-&gt;</del> <i>query</i>(<tt>$domain</tt>, '<ins>NS</ins>');
+        <p><b>my</b> <tt>@nameServers</tt> <del>=</del> <tt>$packet</tt> <del>-&gt;</del> <i>answer</i>;</p>
+        <br />
+        <p><b>foreach my</b> <tt>$rrNameServer</tt> (<tt>@nameServers</tt>)</p>
+        <p>{</p>
+        <p>&emsp;&emsp;<s># Even though our query specifically asked for 'NS' records, the</s></p>
+        <p>&emsp;&emsp;<s># documentation states that the resolver may return various record</s></p>
+        <p>&emsp;&emsp;<s># types within the reply, so we have to check each one.</s></p>
+        <p>&emsp;&emsp;<b>next</b> <b>unless</b> <tt>$rrNameServer</tt> <del>-&gt;</del> <i>type</i> <b>eq</b> '<ins>NS</ins>';</p>
+        <p>&emsp;&emsp;<b>print</b> <tt>$rrNameServer</tt> <del>-&gt;</del> <i>string</i>;</p>
+        <p>}</p>
+        <p></p>
+        <p style="margin: 30px 0px 4px 0px;"><s># This is the output from the above program:</s></p>
+        <pre>
+obedience4life.com.     9659    IN      NS      ns1.mvllc.net.
+obedience4life.com.     9659    IN      NS      ns1.glacieraudio.com.
+obedience4life.com.     9659    IN      NS      ns1.otlamp.com.
+        </pre>
+      </div>
+    </div>
+  </div>
+
+  <div id="page5">
+    <h2>Some Additional Net::Dns Methods</h2>
+    <div id="page5body">
+      <div id="page51">
+        <p class="page51minus1"><s># The resolver will use IPv6 transport if the libraries are available and if</s></p>
+        <p class="page51minus1"><s># the target nameserver is using an IPv6 transport. Force the resolver to use</s></p>
+        <p class="page51minus2"><s># the IPv4 transport.</s></p>
+        <p class="page51plus12"><tt>$resolver</tt> <del>-&gt;</del> <i>force_v4</i>(<u>1</u>);</p>
+
+        <p class="page51minus1"><s># Set the resolver to use TCP instead of UDP. This can be useful if you are</p>
+        <p class="page51minus1"><s># experiencing connection issues. Generally, avoid using TCP due to the</s></p>
+        <p class="page51minus2"><s># performance penalty for opening and closing a TCP connection.</s></p>
+        <p class="page51plus12"><tt>$resolver</tt> <del>-&gt;</del> <i>usevc</i>(<u>1</u>);</p>
+
+        <p class="page51minus2"><s># Return a string containing the most recent error.</s></p>
+        <p class="page51plus12"><b>my</b> <tt>$error</tt> <del>=</del> <tt>$resolver</tt> <del>-&gt;</del> <i>errorstring</i>;</p>
+
+        <p class="page51minus2"><s># Make calls to <span class="fbold">search</span>, <span class="fbold">query</span> and <span class="fbold">send</span> print debug info to &lt;STDOUT&gt;.</s></p>
+        <p class="page51plus12"><tt>$resolver</tt> <del>-&gt;</del> <i>debug</i>(<u>1</u>);</p>
+
+        <p class="page51minus1"><s># Get all of the MX resource records for the target domain and using the</s></p>
+        <p class="page51minus2"><s># current <span style="font-style: italic; font-weight: bold;">default name server</span>. This is not necessarily authoritative.</s></p>
+        <p class="page51plus12"><b>my</b> <tt>@mxRecords</tt> <del>=</del> <i>mx</i>(<tt>$resolver</tt>, <tt>$domain</tt>);</p>
+
+        <p class="page51minus2"><s># Set or Get the UDP packet size. Default is '0': the transport selects.</s></p>
+        <p class="page51plus12"><tt>$resolver</tt> <del>-&gt;</del> <i>udppacketsize</i>(<u>2048</u>);</p>
+
+        <p style="margin: 20px 0px -1px 0px;"><s># <span style="font-style: italic;">There is an entire subset of methods that perform <span class="fbold">background operations</span></span>.</s></p>
+        <p><s># <span style="font-style: italic;">The resolver can be queried to determine if the operation is complete</span>.</s></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="page6">
+    <h2>A typical (<span style="color: #408080;">basic</span>) SMTP conversation</h2>
+    <div id="page6body">
+      <div id="page61">
+        <p style="margin: 0px 0px -14px 0px; padding: 6px 0px 0px 0px;"><b>use</b> <i>Socket</i>;</p><br />
+        <p class="page6minus3" style="-20px 0px -3px 0px;"><b>my</b> <tt>$mailhost</tt> <del>=</del> &lt;<ins>MX host derived from DNS query</ins>&gt;;</p>
+        <p class="page6minus3"><b>my</b> <tt>$protocol</tt> <del>=</del> (<b>getprotobyname</b>('<ins>tcp</ins>'))[<u>2</u>];</p>
+        <p class="page6minus3"><b>my</b> <tt>$mailport</tt> <del>=</del> (<b>getservbyname</b>('<ins>smtp</ins>', '<ins>tcp</ins>'))[<u>2</u>];</p>
+        <p class="page6spacer">&nbsp;</p>
+
+        <p><s># Open a TCP socket and name it 'MAIL'.</s></p>
+        <p><b>socket</b>(<i>MAIL</i>, <i>AF_INET</i>, <i>SOCK_STREAM</i>, <tt>$protocol</tt>);</p>
+        <p><b>select</b>((<b>select</b>(<i>MAIL</i>), <tt>$|</tt> <del>=</del> <u>1</u>)[<u>0</u>]);&ensp;&ensp;<s># Unbuffer the socket.</s></p>
+        <p class="page6spacer">&nbsp;</p>
+
+        <p><s># Connect the MAIL socket to the target mail server. <span class="fbold">S n a4 x8</span> indicates an unsigned</s></p>
+        <p><s># short (the protocol), followed by a short in network order (the port number), a</s></p>
+        <p><s># four byte ASCII string (the packed target address), and eight null bytes.</s></p>
+        <p><b>connect</b>(<i>MAIL</i>, <b>pack</b>('<ins>Sna4x8</ins>', <i>AF_INET</i>, <tt>$mailport</tt>, <tt>$mailhost</tt>))</p>
+        <p class="page6spacer">&nbsp;</p>
+
+        <p><b>print</b> <i>MAIL</i> &quot;<del>helo</del> <ins>$domain<span class="grayish fbold">\r\n</span></ins>
+              &quot;;<s style="margin: 0px 0px 0px 100px;"># <span class="fbold">Must use \r\n instead of \n</span></s></p>
+        <p><b>print</b> <i>MAIL</i> &quot;<del>mail from</del> <del>&lt;</del><ins>$from</ins><del>&gt;</del><ins><span class="grayish fbold">\r\n</span></ins>
+              &quot;;<s style="margin: 0px 0px 0px 50px;"># <span class="fbold">when programming sockets.</span></s></p>
+        <p><b>print</b> <i>MAIL</i> &quot;<del>rcpt to</del> <del>&lt;</del><ins>$target-user</ins><del>&gt;</del><ins><span class="grayish fbold">\r\n</span></ins>&quot;;</p>
+        <p><b>print</b> <i>MAIL</i> &quot;<del>data</del><ins><span class="grayish fbold">\r\n</span></ins>&quot;;</p>
+        <p class="page6spacer">&nbsp;</p>
+
+        <p><s># Send the entire message which includes the header and any MIME encoded attachments</s></p>
+        <p><s># you may have. When you are finished sending data, print a single dot '.' as the</s></p>
+        <p><s># first character on an otherwise blank line.</s></p>
+        <p><b>print</b> <i>MAIL</i> &quot;<del><span class="superbold">.</span></del><ins><span class="grayish fbold">\r\n</span></ins>&quot;;</p>
+        <p><b>print</b> <i>MAIL</i> &quot;<del>quit</del><ins><span class="grayish fbold">\r\n</span></ins>&quot;;</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+// These script entities need to be located here instead of in initpage()
+// (above) because chrome, firefox, safari.
+$('textcontainer').currentPage = 'page0';
+$('textcontainer').innerHTML = $('page0').innerHTML;
+
+// Change the border colors based on browser type in an effort to get
+// them to render the same across the major browsers. I'm not using
+// functional detection right here for obvious reasons.
+if (! document.all)
+{
+  var thisrule = '';
+  if (navigator.userAgent.indexOf("Firefox") != -1)
+  {
+    thisrule = getCssRule('h2');
+    if (thisrule) {thisrule.style.borderColor = '#606060 #aaaaaa #aaaaaa #606060';}
+    thisrule = getCssRule('.subzone');
+    if (thisrule) {thisrule.style.borderColor = '#606060 #aaaaaa #aaaaaa #606060';}
+  }
+  else
+  {
+    // Chrome and Safari.
+    thisrule = getCssRule('h2');
+    if (thisrule) {thisrule.style.borderColor = '#bababa #f5f5f5 #f5f5f5 #bababa';}
+    thisrule = getCssRule('.subzone');
+    if (thisrule) {thisrule.style.borderColor = '#bababa #f5f5f5 #f5f5f5 #bababa';}
+  }
+}
+
+</script>
+
+</body>
+</html>
