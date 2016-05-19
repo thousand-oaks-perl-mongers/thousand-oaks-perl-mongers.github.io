@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+
+		<title>Math::Bytes - A perl module to do computations in computer units</title>
+
+		<meta name="description" content="Math::Bytes - A perl module to do computations in computer units">
+		<meta name="author" content="Mayukh Bose">
+
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+		<link rel="stylesheet" href="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/reveal.css">
+		<link rel="stylesheet" href="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/black.css" id="theme">
+
+		<!-- Code syntax highlighting -->
+		<link rel="stylesheet" href="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/print/pdf.css' : 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+
+		<!--[if lt IE 9]>
+		<script src="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+		<![endif]-->
+	</head>
+
+	<body>
+
+		<div class="reveal">
+
+			<!-- Any section element inside of this container is displayed as a slide -->
+			<div class="slides">
+
+                          
+			         <section>
+                                     <section>
+                                        <h1>Math::Bytes</h1>
+                                        <p>
+                                                <small><a href="mailto:mbose@conversantmedia.com">Mayukh Bose</a></small>
+                                        </p>
+                                        <h3>Doing Math in Computer Units</h3>
+                                     </section>
+                          		<section id="themes">
+					<h2>Themes</h2>
+					<p>
+						Adjust presentation theme to suit projector: <br>
+						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
+                                                
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/black.css'); return false;">Black (default)</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/white.css'); return false;">White</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/league.css'); return false;">League</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/sky.css'); return false;">Sky</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/beige.css'); return false;">Beige</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/simple.css'); return false;">Simple</a> <br>
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/serif.css'); return false;">Serif</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/blood.css'); return false;">Blood</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/night.css'); return false;">Night</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/moon.css'); return false;">Moon</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/solarized.css'); return false;">Solarized</a>
+					</p>
+				</section>
+                                     
+				</section>
+				<section>
+					<h2>Why?</h2>
+					<p>
+					  <ul>
+                                            <li>Several situations where I've worked with data like this:<br />
+                                              <section data-markdown>
+                                              ```
+                                                [/home mb@raven 1252191]$ ls -lh
+                                                -rw-r--r--. 1 vcm vcm 1.3M May 16  2015 m1252191-99_TINY.wmv
+                                                -rw-r--r--. 1 vcm vcm 2.1M May 16  2015 m1252191-99_VERYLOW.flv
+                                                -rw-r--r--. 1 vcm vcm 2.1M May 16  2015 m1252191-99_VERYLOW.mp4
+                                                -rw-r--r--. 1 vcm vcm 2.1M May 16  2015 m1252191-99_VERYLOW.webm
+                                                -rw-r--r--. 1 vcm vcm 2.2M May 16  2015 m1252191-99_VERYLOW.wmv
+                                                -rw-r--r--. 1 vcm vcm  60K May 16  2015 m1252191.jpg
+					      ```
+                                              </section>                                            
+                                            </li>
+                                            <li>Notice that some data is in KB, others in MB, something else could be in TB.</li>
+                                            <li>Quite often, it happens to be late at night when I'm looking at the data</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+				       <h2>The Problems</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">When it is late at night, 60 KB may appear to be larger than 1.2 MB, because 60 > 1.2</li>
+                                            <li class="fragment">Is 7823.5K greater than 7.8M or not?</li>
+                                            <li class="fragment">What if I have to sum up the sizes of groups of files from a list?</li>
+                                            <li class="fragment">How many CDs do I need to backup a 7.25 GB file?</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+					<h2>Searched CPAN yet?</h2>
+					<p>
+					  <ul>
+                                            <li>Number::Bytes::Human does something similar, but not quite what I want<br />
+                                              <section data-markdown>
+                                              ```
+   use Number::Bytes::Human qw(format_bytes parse_bytes);
+
+   # The standard way
+   my $bytes = parse_bytes('1.0K');   # 1024
+   my $bytes = parse_bytes('1.0KB');  # 1000, SI unit
+
+   # The OO way
+   $human = Number::Bytes::Human->new(bs => 1000, si => 1);
+   $bytes = $human->parse('10MB');   # 10*1000*1000
+   $bytes = $human->parse('10MiB');  # 10*1024*1024
+   $bytes = $human->parse('10M');    # Error, no SI unit
+					      ```
+                                              </section>
+                                            </li>
+                                            <li>Has a few issues...</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+					<h2>Issues With This Module</h2>
+					<p>
+					  <ul>
+                                            <li>Calculates sizes differently if unit is 'K' vs. 'KB' (not what I want).<br />
+                                              <section data-markdown>
+                                              ```
+   use Number::Bytes::Human qw(parse_bytes);
+   my $bytes = parse_bytes('1.0K');   # 1024
+   my $bytes = parse_bytes('1.0KB');  # 1000, SI unit
+					      ```
+                                              </section>                                            
+                                            </li>
+                                            <li>Works with K and KB, but not M and MB (M causes error in parse per docs)</li>
+                                            <li>Can't do arithmetic in KB, MB, GB etc.</li>
+                                            <li>Author says the module is alpha-software and it has been in alpha for about 10 years now.</li>
+                                          </ul>  
+					</p>
+				</section>
+
+				<section>
+                                  <section id="fragments1">
+					<h2>Why Write my Own Module</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Because the other examples don't do everything I want.</li>
+                                            <li class="fragment">I haven't written a module in a while</li>
+                                            <li class="fragment">In particular, I haven't mucked with perl's operator overloading features</li>
+                                          </ul>
+					</p>
+                                  </section>
+				</section>
+                                          
+				<section>
+                                  <section id="fragments2">
+				        <h2>What I Want</h2>
+                                        <p>
+					  <ul>
+                                            <li class="fragment">Want to be able to specify sizes and units explicitly.</li>
+                                            <li class="fragment">Want to easily convert from one unit to another.</li>
+                                            <li class="fragment">Want to be able to do arithmetic and comparisons.</li>
+                                            <li class="fragment">Want to be able to print the data in the same unit that I created the object.</li>
+                                          </ul>
+                                          <small><span class="fragment">continued...</span></small>
+                                        </p>
+                                  </section>
+                                </section>
+
+				<section>
+                                  <section id="fragments3">
+					<h2>Use Cases: Create Sizes Explicitly</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">my $file_size = Math::Bytes->KB(25.2);</li>
+                                            <li class="fragment">my $file_size = Math::Bytes->new(25.2, 'KB');</li>
+                                            <li class="fragment">my $file_size = Math::Bytes->parse('25.2 KB');</li>
+                                            <li class="fragment">my $file_size = Math::Bytes->parse('25.2KB');</li>
+                                            <li class="fragment">my $file_size = Math::Bytes->parse('25.2 K');</li>
+                                            <li class="fragment">Can create for bytes (B), KB, MB, GB, TB, PB, EB</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments4">
+					<h2>Use Cases: Converting</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">Convert from One Unit to Another</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->KB(2523);
+   print $file_size->to_bytes() . " bytes\n";
+   my $file_size2 = $file_size->to_MB();
+   my $file_size3 = $file_size->to_GB();
+                                            ```
+                                              </section>
+                                            </li>
+                                            <li class="fragment">Allows conversion to bytes, KB, MB, GB, TB, PB, EB</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>
+                                                           
+				<section>
+                                  <section id="fragments5">
+					<h2>Use Cases: Arithmetic: Addition</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have an object of size 25KB and want to add 1200 bytes of padding at the end.</li>
+                                            <li class="fragment">I have 5 objects of various sizes and I want to add them all</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->KB(25);
+   my $padding = 1200;
+   my $new_file_size = $file_size + $padding;
+
+   my $file_size2 = Math::Bytes->MB(6.1);
+   my $file_size3 = Math::Bytes->new(7.2, 'KB');
+   my $padding2   = Math::Bytes->bytes(2000);                                         
+   my $total_size = $new_file_size + $file_size2 + $file_size3 + $padding2;
+					      ```
+                                              </section>
+                                            </li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments6">
+					<h2>Use Cases: Arithmetic: Subtraction</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have an object of size 25.2KB and want to subtract 900 bytes of header.</li>
+                                            <li class="fragment">I have a large concatenated file and I want to see how much is saved by removing certain files from it.</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->KB(25.2);
+   my $header_size = 900;
+   my $data_size = $file_size - $header_size;
+
+   my $large_file_size = Math::Bytes->MB(6.1);
+   my $small_file_size = Math::Bytes->KB(1200);
+   my $small_file_size2 = Math::Bytes->new(1300, 'KB');
+   my $smaller_size = $large_file_size - $small_file_size - $small_file_size2;
+					      ```
+                                              </section>
+                                            </li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments7">
+					<h2>Use Cases: Arithmetic: Multiplication</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have 5 objects each X KB in size. How much space do they take.</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->KB(15.2);
+   my $total_size = $file_size * 5;
+					      ```
+                                              </section>
+                                            </li>
+                                            <li class="fragment">Does not make sense to multiply two Math::Bytes objects together, so throw error in this case.</li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments8">
+					<h2>Use Cases: Arithmetic: Division</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have a large file and I want to know how many CDs I need to burn it.</li>
+                                            <li class="fragment">I have a large file that I want to divide into 7 parts. What is the size of each part.</li>                                            
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->GB(15.2);
+   my $cd_size   = Math::Bytes->MB(640);
+   my $num_cds   = $file_size / $cd_size;
+   print "# of CDs needed: $num_cds\n";                                         
+
+   my $file_size2 = Math::Bytes->TB(1.25);
+   my $num_parts  = 7;
+   my $part_size  = $file_size2 / $num_parts;
+                                            ```
+                                              </section>
+                                            </li>
+                                            <li class="fragment">Notice that the result of the first calculation is dimensionless</li>
+                                          </ul>  
+					</p>
+                                  </section>
+                                </section>
+                                          
+				<section>
+                                  <section id="fragments9">
+					<h2>Use Cases: Comparison</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have an object of size 1200KB and another of 1.3 MB. Which is larger?</li>
+                                            <li class="fragment">Sort a bunch of Math::Bytes object</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                               ```
+   my $file_size = Math::Bytes->KB(1200);
+   my $file_size2 = Math::Bytes->MB(1.3);
+   print "File1 is smaller\n" if ($file_size < $file_size2);
+					      ```
+                                              </section>
+                                            </li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+
+				<section>
+                                  <section id="fragments10">
+					<h2>Use Cases: Printing</h2>
+					<p>
+					  <ul>
+                                            <li class="fragment">I have an object that I did a bunch of arithmetic on and want the final size.</li>
+                                            <li class="fragment">Sort a bunch of Math::Bytes objects</li>
+                                            <li class="fragment">For example:<br />
+                                              <section data-markdown>
+                                              ```
+    my $file_size = Math::Bytes->KB(25);
+    my $padding = 1200;
+    my $new_file_size = $file_size + $padding;
+    print "New file size = $new_file_size\n";  # Prints in the same unit as $file_size                                        
+
+    my $cd_size = Math::Bytes->GB(4.7);
+    print "cd has ", $cd_size->to_KB, " kilobytes\n";
+
+    #Example Converting from one unit to another (including precision)
+    # Convert to 4 decimal places precision                                            
+    my $cd_size = Math::Bytes->new(4.7, 'GB', {precision => 4}); 
+    print "cd has ", $cd_size->to_TB, " terabytes\n";
+					      ```
+                                              </section>
+                                            </li>
+                                          </ul>  
+					</p>
+                                  </section>
+				</section>                                
+                                          
+                                <section>
+                                  <section id="fragments11">          
+					<h2>Links and References</h2>
+					<p>
+					  <ul>
+                                            <li><a href="http://search.cpan.org/~dagobert/Number-Bytes-Human-0.10/Human.pm">Number::Bytes::Human</li>
+                                            <li><a href="http://stackoverflow.com/questions/511785/how-do-i-get-the-size-of-a-file-in-megabytes-using-perl">Stack Overflow: How do I get the size of a file in megabytes?</li>
+                                          </ul>
+                                          </p>
+                                  </section>
+                                </section>                                
+
+                                <!--
+				<section id="transitions">
+					<h2>Transition Styles</h2>
+					<p>
+						You can select from different transitions, like: <br>
+						<a href="?transition=none#/transitions">None</a> -
+						<a href="?transition=fade#/transitions">Fade</a> -
+						<a href="?transition=slide#/transitions">Slide</a> -
+						<a href="?transition=convex#/transitions">Convex</a> -
+						<a href="?transition=concave#/transitions">Concave</a> -
+						<a href="?transition=zoom#/transitions">Zoom</a>
+					</p>
+				</section>
+
+				<section id="themes">
+					<h2>Themes</h2>
+					<p>
+						reveal.js comes with a few themes built in: <br>
+						<!-- Hacks to swap themes after the page has loaded. Not flexible and only intended for the reveal.js demo deck. -->
+                                                <!--
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/black.css'); return false;">Black (default)</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/white.css'); return false;">White</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/league.css'); return false;">League</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/sky.css'); return false;">Sky</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/beige.css'); return false;">Beige</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/simple.css'); return false;">Simple</a> <br>
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/serif.css'); return false;">Serif</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/blood.css'); return false;">Blood</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/night.css'); return false;">Night</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/moon.css'); return false;">Moon</a> -
+						<a href="#" onclick="document.getElementById('theme').setAttribute('href','http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/css/theme/solarized.css'); return false;">Solarized</a>
+					</p>
+				</section>  -->
+
+			</div>
+
+		</div>
+
+		<script src="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/lib/js/head.min.js"></script>
+		<script src="http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/js/reveal.js"></script>
+
+		<script>
+
+			// Full list of configuration options available at:
+			// https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				controls: true,
+				progress: true,
+				history: true,
+				center: true,
+
+				transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+				// Optional reveal.js plugins
+				dependencies: [
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+					{ src: 'http://thousand-oaks-perl-mongers.github.io/Presentations/reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+				]
+			});
+
+		</script>
+
+	</body>
+</html>
