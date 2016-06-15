@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+
+    <title>Carton and Minilla</title>
+
+    <meta name="description" content="Bundling depencencies with Carton and easy module releases with Minilla">
+    <meta name="author" content="Jed Cunningham">
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+
+    <!-- Joint Diagramming css -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/joint.css" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+
+  <body>
+
+    <div class="reveal">
+
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Carton and Minilla</h2>
+	  <p>
+	    <small>Jed Cunningham - Thousand Oaks Perl Mongers</small>
+	  </p>
+      <p>
+        <small>June 15, 2016</small>
+	  </p>
+	</section>
+
+        <section>
+          <h2>Carton</h2>
+          <blockquote>
+              Perl module dependency manager
+          </blockquote>
+        </section>
+
+        <section>
+            <img src="images/carton.png" />
+        </section>
+
+        <section>
+          <h2>What?</h2>
+          <ul>
+              <li>Declare dependencies in cpanfile</li>
+              <li>Ensure you use the same versions of modules across devs and/or environments</li>
+          </ul>
+        </section>
+
+        <section>
+        <h2>cpanfile</h2>
+          <p>Use DateTime 1.17 from 2015</p>
+          <pre><code>
+          requires 'DateTime', '==1.17';
+          </code></pre>
+        </section>
+
+        <section>
+            <pre><code>
+            carton install
+            ls -l
+            vim cpanfile.snapshot
+            </code></pre>
+            <dl>
+                <dt>local</dt><dd>Modules are installed here</dd>
+                <dt>cpanfile.snapshot</dt><dd>The exact versions that were installed</dd>
+            </dl>
+        </section>
+
+        <section>
+            <p>Simple script (ex.pl)</p>
+            <pre><code>
+            #!/usr/bin/env perl
+            use warnings;
+            use strict;
+
+            use DateTime;
+            use v5.24;
+
+            say $DateTime::VERSION;
+            </code></pre>
+        </section>
+
+        <section>
+            <p>Lets run it</p>
+            <pre><code>
+            chmod +x ex.pl
+            carton exec ./ex.pl
+            perl -Ilocal/lib/perl5 ex.pl
+            </code></pre>
+        </section>
+
+        <section>
+            <p>Ready for deployment?</p>
+            <p>Push code somewhere (minus local :)</p>
+            <pre><code>
+            carton install --deployment
+            </code></pre>
+        </section>
+
+        <section>
+            <p>What about bundling? (Don't want to hit cpan when deploying)</p>
+            <pre><code>
+            carton bundle
+            </code></pre>
+            <p>Bundles the necessary tarballs into <em>vendor/cache</em></p>
+        </section>
+
+        <section>
+            <p>Install from bundled tarballs</p>
+            <pre><code>
+            carton install --cached (--deployment)
+            </code></pre>
+            <p>Using both --cached and --deployment, you wont hit cpan</p>
+        </section>
+
+        <section>
+            <p>Alternatives</p>
+            <ul>
+                <li>Carmel</li>
+                <li>Pinto</li>
+                <li>Stratopan (hosted Pinto)</li>
+            </ul>
+        </section>
+
+        <section>
+          <h2>Minilla</h2>
+          <blockquote>
+              opinionated CPAN module authoring tool
+          </blockquote>
+        </section>
+
+        <section>
+          <p>Assumes your module(s):</p>
+          <ul>
+              <li>Are Pure Perl and located in lib/</li>
+              <li>Executables are in script/ (if any)</li>
+              <li>Is maintained with Git</li>
+              <li>Has a static list of prerequisites described in cpanfile</li>
+              <li>Has a Changes file</li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Benefits</p>
+          <ul>
+              <li><strong>Install via git, cpanm git://...</strong></li>
+              <li>Works out of the box
+                <ul>
+                    <li>Generates README.md from POD</li>
+                    <li>Makes tags</li>
+                    <li>Populates contributors section</li>
+                </ul>
+              </li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Cons</p>
+          <ul>
+              <li>Not all that flexible</li>
+              <li>Minimal configuration</li>
+              <li>Doesn't declare all its dependencies</li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Alternatives</p>
+          <ul>
+              <li>Dist::Milla (sister project by MIYAGAWA)</li>
+              <li>Dist::Zilla</li>
+          </ul>
+        </section>
+
+        <section>
+          <p>Demo</p>
+        </section>
+
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/lodash.min.js"></script>
+    <script src="../../static/js/backbone-min.js"></script>
+    <script src="../../static/js/joint.min.js"></script>
+
+    <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+
+    </script>
+  </body>
+</html>
