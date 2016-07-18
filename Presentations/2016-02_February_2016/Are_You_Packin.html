@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    
+    <title>Are you Packin</title>
+    
+    <meta name="description" content="Raw data in Perl">
+    <meta name="author" content="Peter Bowen">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+    
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+
+    <!-- Joint Diagramming css -->
+    <link rel="stylesheet" type="text/css" href="../../static/css/joint.css" />
+
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+  
+  <body>
+    
+    <div class="reveal">
+      
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Are You Packin'</h2>
+          <p>
+            <small>or</small>
+          </p>
+          <p>
+            I Really Hate Your Guts!
+          </p>
+	  <p>
+            <br><br>
+	    <small>Peter Bowen - Thousand Oaks Perl Mongers</small>
+	  </p>
+          <p>
+            <small>February 17, 2016</small>
+	</section>
+
+        <section>
+          <h2> Data Exchange </h2>
+          
+          <p>How do we share data?</p>
+          <ul>
+            <li>XML</li>
+            <li>JSON</li>
+            <li>CSV</li>
+          </ul>
+
+	</section>
+
+        <section>
+          <h2> Data Exchange </h2>
+          <p>How about within software?</p>
+          <ul>
+            <li>XS modules (C libraries)</li>
+            <li>Binary files</li>
+          </ul>
+          
+	</section>
+
+        <section>
+          <h2> Data Exchange </h2>
+          <p>How about across a USB connection?</p>
+          <ul>
+            <li>Scanner</li>
+            <li>Digital Camera</li>
+            <li>Radio</li>
+          </ul>
+
+	</section>
+
+        <section>
+          <h2> Data Exchange </h2>
+          <p>What about with a Mainframe?</p>
+          <ul>
+            <li>Credit Card processor?</li>
+          </ul>
+          
+	</section>
+
+        <section>
+          <h2> Data Exchange </h2>
+          <p>Over the network?</p>
+          <ul>
+            <li>Wifi Radios</li>
+            <li>Rack Bot Style Hardware</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>How does Perl handle it?</h2>
+
+          <ul>
+            <li>pack</li>
+            <ul>
+              <li>Uses a template to convert a list of scalars into a binary string.</li>
+            </ul>
+            <li>unpack</li>
+            <ul>
+              <li>Uses a template to convert a binary string into a list of scalars.</li>
+            </ul>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Pack Templates</h2>
+          <h3>Integers/Charaters</h3>
+          <table>
+            <tr><th>Format</th><th>Description</th></tr>
+            <tr><td>c,C</td><td>A signed/unsigned char (8-bit integer) value</td></tr>
+            <tr><td>s,S</td><td>A signed/unsigned short, always 16 bits</td></tr>
+            <tr><td>l,L</td><td>A signed/unsigned long, always 32 bits</td></tr>
+            <tr><td>q,Q</td><td>A signed/unsigned quad (64-bit integer) value</td></tr>
+            <tr><td>i,I</td><td>A signed/unsigned integer, native format</td></tr>
+            <tr><td>n,N</td><td>A 16/32 bit value in "network" (big-endian) order</td></tr>
+            <tr><td>v,V</td><td>A 16/32 bit value in "VAX" (little-endian) order</td></tr>
+          </table>
+        </section>
+
+        <section>
+          <h2>Pack Templates</h2>
+          <h3>Strings</h3>
+          <table>
+            <tr><th>Format</th><th>Description</th></tr>
+            <tr><td>a,A</td><td>A null/space padded string</td></tr>
+            <tr><td>b,B</td><td>A bit (binary) string in ascending/descending bit order</td></tr>
+            <tr><td>h,H</td><td>A hexadecimal string, low/high nybble first</td></tr>
+            <tr><td>Z</td><td>A null terminated string</td></tr>
+          </table>
+        </section>
+
+        <section>
+          <h2>Let's try a simple Example</h2>
+          <h3>Fixed Field/Fixed Length Data</h3>
+          <table>
+            <tr><th>Field</th><th>Length</th></tr>
+            <tr><td>First Name</td><td>20</td></tr>
+            <tr><td>Last Name</td><td>100</td></tr>
+            <tr><td>Gender</td><td>1</td></tr>
+          </table>          
+        </section>
+
+        <section>
+          <h2>Let's try a simple Example</h2>
+          <h3>Use SUBSTR</h3>
+          <pre><code>
+my $first_name = substr( $record, 0,20 );
+my $last_name  = substr( $record, 20, 100 );
+my $gender     = substr( $record, -1 );
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Let's try a simple Example</h2>
+          <h3>Use PACK</h3>
+          <pre><code>
+ my $template = “A20 A100 C”;
+ my ($first_name, $last_name, $gender ) = unpack( $template, $record );
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>A More Complicated Example</h2>
+          <h3>XM PCR Radio</h3>
+          <img src="packing_images/pcr.png">
+        </section>
+
+        <section>
+          <h2>XM PCR Radio</h2>
+          <h3>Data Protocol</h3>
+          <ul>
+            <li>The physical protocol is simple RS-232</li>
+            <table>
+              <tr><th>Baud</th><th>Parity</th><th>Data Bits</th><th>Stop Bits</th><th>Flow Control</th><tr>
+              <tr><td>9600</td><td>No</td><td>8</td><td>1</td><td>No</td></tr>
+            </table>
+            <li>Hardware USB/RS-232 conversion</li>
+            <li>Commands are sent to the receiver as 8-bit binary data.</li>
+            <li>Responses are sent back to the computer as 8-bit binary data with any text data encoded as ASCII text.</li>
+          </ul>
+        </section>
+        <section>
+          <h2>XM PCR Radio</h2>
+          <h3>Message Protocol</h3>
+          <ul>
+            <li>All messages follow the same basic structure:</li>
+            <ul>
+              <li>two header bytes, 5A A5</li>
+              <li>a word that contains the length of the message</li>
+              <li>two terminator bytes</li>
+            </ul>
+          </ul>
+          <hr>
+          <small>
+            <table>
+              <tr><th>Start</th><th>Length</th><th>Data</th><th>Notes</th></tr>
+              <tr><td>0</td><td>2</td><td>5A&nbsp;A5</td><td>This is the command header. All messages start with this two-byte sequence.</td></tr>
+              <tr><td>2</td><td>2</td><td>xx&nbsp;xx</td><td>This is the length of the data section. This does NOT include the header, length word, or the terminator.</td></tr>
+              <tr><td>4</td><td>n</td><td>74</td><td>Command data. (74 is the XM Direct command to turn on the power.)</td></tr>
+              <tr><td>n+4</td><td>2</td><td>ED&nbsp;ED</td><td>Terminator. This ends the command sequence.</td></tr>
+            </table>
+          </small>
+          <hr>
+        </section>
+        
+        <section>
+          <h2>XM::PCR Commands</h2>
+          <pre><code>
+  my $command_start = ['5A', 'A5'];
+  my $command_end = ['ED', 'ED'];
+  my $commands = {
+     'on' => ['00', '10', '10', '24', '01'],
+     'off' => ['01', '00'],
+     'sleep' => ['01', '01'],
+     'channel_change' => ['10', '02', 'CHANNEL', '00', '00', '01'],
+     'mute_on' => ['13', '01'],
+     'mute_off' => ['13', '00'],
+     'ext_channel_info' => ['22', 'CHANNEL'],
+     'this_channel_info' => ['25', '08', 'CHANNEL', '00'],
+     'next_channel_info' => ['25', '09', 'CHANNEL', '00'],
+     'radio_id' => ['31'],
+     'signal_quality' => ['43'],
+     'monitor' => ['50', 'CHANNEL', '01', '01', '01', '01']
+  };
+          </code></pre>
+        </section>
+        
+        <section>
+          <h2>XM::PCR Module (write)</h2>
+          <pre><code>
+  sub _write_port {
+    my $self = shift;
+    my $command = shift;
+    my $channel = shift;
+    my $rct = shift || 50;
+    my @msg;
+    # Copy from the master hash - don't mess up the master!
+    foreach my $value (@{$commands->{$command}}) {
+      push @msg, $value;
+    }
+    unshift @msg, sprintf("%04d", scalar(@msg));
+
+    # Set the channel
+    @msg = map ( /CHANNEL/ ? sprintf("%02X", $channel) : $_, @msg);
+    unshift @msg, @$command_start;
+    push @msg, @$command_end;
+    my $message = join('', @msg);
+    $self->{_radio}->write(pack("H*", $message));
+    $self->{_radio}->read_const_time($rct);
+  }
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Channel Response</h2>
+          <small>
+            <table>
+              <tr><th>Start</th><th>Length</th><th>Description</th></tr>
+              <tr><td>0</td><td>1</td><td>A5</td></tr>
+              <tr><td>1</td><td>2</td><td></td></tr>
+              <tr><td>3</td><td>1</td><td>Channel Number</td></tr>
+              <tr><td>4</td><td>1</td><td>Service ID</td></tr>
+              <tr><td>5</td><td>1</td><td>01-Station Name Valid, 00-Not valid</td></tr>
+              <tr><td>6</td><td>16</td><td>Station Name</td></tr>
+              <tr><td>23</td><td>1</td><td>01-Genre Name Valid</td></tr>
+              <tr><td>24</td><td>16</td><td>Genre</td></tr>
+              <tr><td>40</td><td>1</td><td>01-Title/Artist Valid</td></tr>
+              <tr><td>41</td><td>16</td><td>Artist</td></tr>
+              <tr><td>57</td><td>16</td><td>Title</td></tr>
+            </table>
+          </small>
+        </section>
+
+        <section>
+          <h3>Response Data Structure</h3>
+
+          <pre><code>
+  'channel_info'         =>  {
+      'reponse_octet'     => 'A5',
+      'unpack_template'   => 'H2 C C H2 A16 H4 A16 H2 A16 A16 H2 H*',
+      'unpack_method'     => '_read_channel',
+  },
+  'power_on' => {
+      'reponse_octet'     => '80',
+      'unpack_template'   => 'H2 H2 H2 H2 H2 H4 C H2 C H2 H2 H2 H2 H4 H2 A8 C',
+      'unpack_method'     => '_read_power',
+      'on_trigger_method' => ''
+  },
+  'signal_quality' => {
+      'response_octet' => 'C3',
+      'unpack_template' =>
+          'H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2 H2',
+      'unpack_method'     => '_read_signal_strength',
+      'on_trigger_method' => ''
+  },
+          </pre></code>
+        </section>
+  
+
+        <section>
+          <h2>Isn't that good enough?</h2>
+          <ul>
+            <li>Scale...</li>
+            <ul>
+              <li>All operations run in <i>O(n)</i></li>
+              <li>Insering <i>n</i> items takes <i>O(n<sup>2</sup>)</i></li>
+            </ul>
+            <li>Not practical for very large lists</li>
+            <li>Everyone knows how to fix this...</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Trees!</h2>
+        </section>
+        <section>
+          <h2>Trees!</h2>
+          <ul>
+            <li>Faster!</li>
+            <ul>
+              <li>Typically <i>O(log n)</i> search time.</li>
+              <li>Inserts are faster at <i>O(n log n)</i> time.</li>
+            </ul>
+            <li>But wait...</li>
+            <ul>
+              <li>Worst case is <i>O(n)</i></li>
+              <li>Surprisingly Common</li>
+              <ul>
+                <li>Sort the keys before storing</li>
+                <li>Stringy trees are slower to search than linked lists</li>
+                <li>Just use and algorythm to fix it!</li>
+              </ul>
+            </ul>
+        </section>
+        <section>
+          <h2>2-3 Tree</h2>
+          <img src="bloom_images/23T.gif" height=500>
+        </section>
+        <section>
+          <h2>Red Black Tree</h2>
+          <img src="bloom_images/RBT.png" height=500>
+        </section>
+        <section>
+          <h2>AVL Tree</h2>
+          <img src="bloom_images/AVL.png" height=500>
+        </section>
+
+        <section>
+          <h2>AARGH!</h2>
+          <h3>Are you kidding me?<h3>
+              <ul>
+                <li>So Complicated</li>
+              </ul>
+        </section>
+
+        <section>
+          <h2>Is there an easier way?</h2>
+          <ul>
+            <li>The solution should be:</li>
+            <ul>
+              <li>Fast</li>
+              <li>Simple to understand and troubleshoot</li>
+              <li>Flexible</li>
+        </section>
+
+        <section>
+          <h2>Hash Tables!</h2>
+        </section>
+        <section>
+          <h2>Hash Tables!</h2>
+          <ul>
+            <li>Algorythms are MUCH easier to understand</li>
+            <li>Better Average Behavior</li>
+            <li>Worst Case is still the same</li>
+            <ul>
+              <li>Rare - Extremely Rare</li>
+            </ul>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Keys</h2>
+          <ul>
+            <li>Almost always strings</li>
+            <li>Non-strings are often converted to strings - hopefully unique</li>
+            <li>Not really useful without unique keys</li>
+        </section>
+
+        <section>
+          <h2>How does it work?</h2>
+          <ol>
+            <li>Create an array of reasonable size</li>
+            <li>Hash the key creating an integer (Magic)</li>
+            <li>Put it into the right bucket</li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>But Wait...</h2>
+          <ul>
+            <li>How do you create the hashed value?</li>
+            <li>What happens when more than one key hashes?</li>
+            <li>What happens when you run out of buckets?</li>
+            <li>Is it performant?</li>
+          </ul>
+        </section>
+        <section>
+          <section>
+            <h2>Hashing Algorithm</h2>
+            <ol>
+              <li>Find a good pseudo random number generator</li>
+              <li>Seed it with the key</li>
+              <li>Generate a random number</li>
+              <li>Divide it by the number of buckets</li>
+              <li>The remainder is the index</li>
+            </ol>
+            </section>
+            <section>
+              <h2>Notes</h2>
+              <ul>
+                <li><a href="http://stackoverflow.com/questions/11214270/what-hashing-function-algorithm-does-perl-use">How does perl hashing work.</a></li>
+              </ul>
+            </section>
+        
+            <section>
+              <h2>Code</h2>
+<pre><code>
+    my %hash;
+
+    #Give Perl a hint if you know how big it is...
+    # keys(%hash) = 1_000_000;
+
+    foreach my $number ( 1 .. 1_000 ) {
+        $hash{$number}++;
+        print $number, " : ", scalar %hash, "\n";
+    }
+</code></pre>
+            </section>
+          </section>
+          
+          <section>
+            <h2>Optimizing the Randomizer</h2>
+            <ul>
+              <li>Specific Data Types</li>
+              <li>Generally not worth your time</li>
+            </ul>
+          </section>
+        </section>
+        <section>
+          <h2>Collisions</h2>
+          <ul>
+            <li>When Storing:</li>
+            <ol>
+              <li>Use a list</li>
+              <li>Append the new item to the front of the list</li>
+            </ol>
+            <li>When Retreiving:</li>
+            <ol>             
+              <li>Find the right bucket</li>
+              <li>Traverse the list looking for the key match</li>
+            </ol>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Scaling the Table</h2>
+          <ol>
+            <li>Double the size of the table</li>
+            <li>Redistribute the data</li>
+          </ol>
+          <ul>
+            <li>Perl stores the hashed value with the key</li>
+            <li>Doubling the table decreases the frequency<li>
+          </ul>
+        </section>
+        
+        <section>
+          <h2>Performance</h2>
+          <ul>
+            <li>Store and Retrieve are at <i>O(log n)</i></li>
+            <li>Worst Case is <i>O(n)</i> - Although extemely rare</li>
+            <li>Rebuilding takes <i>O(n)</i></li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Bloom Filters</h2>
+          <h3>Problem</h3>
+          <p>I have a value that I need to compare to a large set of values.</p>
+        </section>
+        <section>
+          <h2>Use an Array!</h2>
+          <ul>
+            <li>Ummmm... have to traverse the array</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>Use a Hash!</h2>
+          <ul>
+            <li>Ummm... Memory Usage?</li>
+          </ul>
+        </section>
+
+        <section>
+          <h2>A better way</h2>
+
+          <p>Can I quickly eliminate a whole class of values as not being in the list before I have to go and search for them?</p>
+        </section>
+        
+        <section>
+          <h2>Bloom Filter</h2>
+          <p>Space/Time Trade-offs in Hash Coding with Allowable Errors</p>
+          <ul>
+            <li>Rapidly eliminate a value from a set</li>
+            <li>Burton H. Bloom - 1970</li>            
+          </ul>
+        </section>
+
+        <section>
+          <h2>How does it work</h2>
+          <ul>
+            <li>Building the Filter</li>
+            <ol>
+              <li>Create a large binary list</li>
+              <li>Get two hashing algorythms</li>
+              <li>Apply both values to the binary list</li>
+            </ol>
+          </ul>
+        </section>
+
+        <section>
+          <section>
+          <h2>How does it work?</h2>
+          <ol>
+            <li>Apply both algorythms to the value</li>
+            <li>If they're not both there, then false</li>
+            <li> If they are there, then use the longer check</li>
+          </ol>
+          </section>
+          <section>
+            <h2>Example</h2>
+            <a href=billmill.org/bloomfilter-tutorial/>Bloomfilter Example</a>
+          </section>
+        </section>
+            
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+    
+    <script src="../../static/js/jquery.min.js"></script>
+    <script src="../../static/js/lodash.min.js"></script>
+    <script src="../../static/js/backbone-min.js"></script>
+    <script src="../../static/js/joint.min.js"></script>
+    
+    <script>
+      
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+      
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+      
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+      
+    </script>
+  </body>
+</html>
