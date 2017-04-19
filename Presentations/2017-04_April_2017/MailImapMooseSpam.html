@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    
+    <title>Spam, Perl, && You</title>
+    
+    <meta name="description" content="Spam, Perl && You">
+    <meta name="author" content="Peter Bowen">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+    
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+    
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+  
+  <body>
+    
+    <div class="reveal">
+      
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Spam, Perl && You</h2>
+	  <p>
+	    <small>Peter Bowen</small>
+	  </p>
+	</section>
+
+        <section>
+          <h2>Problem</h2>
+          <p>
+            Spam, Spammety, Spam!
+          </p>
+        </section>
+        
+	<section>
+	  <h2>History</h2>
+	  <p>
+            <ul>
+              <li>Hosted my own mail server</li>
+              <li>Procmail is great for filtering</li>
+              <li>Spamprobe for beysian</li>
+              <li>Spam Assasin for everyting else</li>
+              <li>Tar pits, etc. for known spammers</li>
+              <li>It worked Awesome!</li>
+            </ul>
+	  </p>
+	</section>
+        <section>
+          <h2>What Changed?</h2>
+	  <p>
+            <ul>
+              <li>I was identifed as a potential spammer.</li>
+              <li>SPF, DKIM, and DMARC were set up correctly.</li>
+              <li>Not on any blacklists (IP/hostname)</li>
+              <li>Could not get any help from blocking organizations (AOL)</li>
+              <li>Gave up - Rackspace.com</li>
+              <li>enhanced spam tools & filtering extra</li>
+            </ul>
+	  </p>
+        </section>
+        <section>
+          <h2>Solution</h2>
+          <ul>
+            <li>Client Tools - but doesn't share well...</li>
+            <li>Pay for server tools - paying is for chumps</li>
+            <li>Write something to handle it - Of course!</li>
+          </ul>
+        </section>
+        <section>
+          <h2>Let's get started</h2>
+            <h3>Mail::IMAPClient</h3>
+            <p>Provides a pretty good way to connect to and use IMAP mail servers.</p>
+        </section>
+        <section>
+          <h2>Basic Connection</h2>
+          <pre><code>
+              use Mail::IMAPClient;
+
+              my $id   = 'jack@foo.bar';
+              my $pass = 'oogey_boogey';
+              my $host = 'secure.emailsrvr.com';
+              my $folder = 'INBOX'
+
+              my $imap = Mail::IMAPClient->new(
+                  Server   => $host,
+                  User     => $id,
+                  Password => $pass,
+                  Uid      => 1,
+                  Peek     => 1,
+              )       or die "Cannot connect to $host as $id: $@";
+
+              $imap->select($folder);
+
+              my @messages = reverse ( $imap->messages() );
+              foreach my $message_id (@messages) {
+                  # Do cool stuff!
+              }      
+          </code></pre>
+        </section>
+        <section>
+          <h2>Enhancements</h2>
+          <h3>Add a Moose Class to keep track of the message</h3>
+          <pre><code>
+              package OwlPost::Models::Message;
+
+              use Moo;
+              use namespace::autoclean;
+
+              use DateTime::Format::Mail;
+
+              has 'id' => (
+                  is => 'ro',
+                  required => 1
+              );
+
+              has 'imap' => (
+                  is => 'ro',
+                  required => 1
+              );
+
+              has 'envelope' => (
+                  is => 'ro',
+                  lazy => 1,
+                  builder => '_build_envelope',
+              );
+
+              has 'folder' => (
+                  is => 'ro',
+                  required => 1
+              );
+
+              has 'addresses' => (
+                  is => 'ro',
+                  lazy => 1,
+                  builder => '_build_addresses',
+              );
+
+              has 'date' => (
+                  is => 'ro',
+                  lazy => 1,
+                  builder => '_build_date',
+              );
+
+              has 'subject' => (
+                  is => 'ro',
+                  lazy => 1,
+                  builder => '_build_subject',
+              );
+
+              has raw_message => (
+                  is => 'ro',
+                  lazy => 1,
+                  builder => '_build_raw_message',
+              );
+
+              sub _build_envelope {
+                  my $self = shift;
+
+                  my $envelope = $self->imap()->get_envelope( $self->id() );
+
+                  return $envelope;
+              }
+
+              sub _build_addresses {
+                  my $self = shift;
+
+                  my $addresses = [ ];
+                  my $envelope = $self->envelope();
+
+                  if ( defined $envelope ) {
+                      push @$addresses, $envelope->to_addresses();
+                      push @$addresses, $envelope->from_addresses();
+                      push @$addresses, $envelope->cc_addresses();
+                      push @$addresses, $envelope->replyto_addresses();
+                  }
+                  return $addresses;
+              }
+
+              sub _build_date {
+                  my $self = shift;
+                  my $date_header = $self->imap()->parse_headers( $self->id(), "Date" );
+
+                  return undef unless $date_header;
+
+                  my $date_text = $date_header->{Date}->[0];
+
+                  my $parser = DateTime::Format::Mail->new( loose => 1);
+                  my $date = $parser->parse_datetime( $date_text );
+
+                  return $date;
+              }
+
+              sub _build_subject {
+                  my $self = shift;
+
+                  my $subject = q{};
+                  my $headers = $self->imap()->parse_headers( $self->id(), "Subject" );
+
+                  if ( $headers ) {
+                      $subject = $headers->{Subject}->[0];
+                  }
+
+                  return $subject;
+              }
+
+              sub _build_raw_message {
+                  my $self = shift;
+
+                  my $string = $self->imap()->message_string( $self->id() );
+
+                  return $string;
+              }
+
+              sub move {
+                  my $self = shift;
+
+                  my $destination = shift;
+                  print STDERR "Moving to " , $destination, "\n";
+                  $self->imap()->move( $destination, $self->id() )
+                  or die "Could not move: $@\n";
+
+                  return 1;
+              }
+
+
+              __PACKAGE__->meta->make_immutable;
+              1;          
+          </code></pre>
+        </section>
+        <section>
+          <h2>Modular Processors</h2>
+          <h3>Addresses</h3>
+          <pre><code>
+            package OwlPost::Processors::AddressBase;
+
+            use Moo;
+            use namespace::autoclean;
+
+            has 'address_list' => (
+                is       => 'ro',
+                lazy     => 1,
+                builder  => '_build_address_list',
+                required => 1,
+            );
+
+            has 'destination_folder' => (
+                is       => 'ro',
+                lazy     => 1,
+                builder  => '_build_destination_folder',
+                required => 1,
+            );
+
+            sub process {
+                my $self    = shift;
+                my $args    = shift;
+                my $message = $args->{message};
+
+                my $handled = 0;
+
+                my $envelope = $message->envelope();
+
+                foreach my $address ( values %{ $self->address_list() } ) {
+                    if ( grep { $_ =~ /$address/i } @{ $message->addresses() } )
+                    {
+                        $message->move( $self->destination_folder() );
+                        $handled = 1;
+                    }
+                }
+
+                return { handled => $handled };
+            }
+
+            __PACKAGE__->meta->make_immutable;
+            1;
+          </code></pre>
+        </section>
+        <section>
+          <h2>Filter email from redfin to its own folder</h2>
+          <pre><code>
+            package OwlPost::Processors::Address::Redfin;
+
+            use Moo;
+
+            use namespace::autoclean;
+
+            extends 'OwlPost::Processors::AddressBase';
+
+            sub _build_address_list {
+                return { redfin => 'listings@redfin.com', };
+            }
+
+            sub _build_destination_folder {
+                return 'INBOX.Redfin';
+            }
+
+            __PACKAGE__->meta->make_immutable;
+
+            1;        
+          </code></pre>
+        </section>
+        <section>
+          <h2>Process based on the subject</h2>
+          <pre><code>
+            package OwlPost::Processors::Subject;
+
+            use Moo;
+            use namespace::autoclean;
+
+            use DateTime;
+
+            has 'search_expression' => (
+                is       => 'ro',
+                lazy     => 1,
+                builder  => '_build_search_expression',
+                required => 1,
+            );
+
+            has 'destination_folder' => (
+                is       => 'ro',
+                lazy     => 1,
+                builder  => '_build_destination_folder',
+                required => 1,
+            );
+
+            sub process {
+                my $self    = shift;
+                my $args    = shift;
+                my $message = $args->{message};
+
+                my $handled = 0;
+
+                my $subject = $message->subject();
+
+                if ( $subject =~ $self->search_expression() ) {
+                    $message->move( $self->destination_folder() );
+                    $handled = 1;
+                }
+
+                return { handled => $handled };
+            }
+
+            __PACKAGE__->meta->make_immutable;
+            1;
+          </code></pre>
+        </section>
+        <section>
+          <h2>Process Live Steam List</h2>
+          <pre><code>
+            package OwlPost::Processors::Subject::LiveSteam;
+
+            use Moo;
+            use namespace::autoclean;
+
+            extends 'OwlPost::Processors::Subject';
+
+            sub _build_search_expression {
+                my $expression = qr{\[(?:Livesteamers)\]};
+                return $expression;
+            }
+
+            sub _build_destination_folder {
+                my $year = DateTime->now()->year();
+                return 'INBOX.LiveSteam';
+            }
+
+            __PACKAGE__->meta->make_immutable;
+
+            1;
+          </code></pre>          
+        </section>
+        <section>
+          <h2>Spam Assassin</h2>
+          <pre><code>
+            sub process {
+                my $self    = shift;
+                my $args    = shift;
+                my $message = $args->{message};
+
+                my $handled = 0;
+
+                my $mail =
+                  $self->spam_assassin()->parse( $message->raw_message() );
+                my $status = $self->spam_assassin()->check($mail);
+
+                if ( $status->is_spam() ) {
+                    $message->move( $self->spam_folder() );
+                    $handled = 1;
+                }
+
+                $status->finish();
+                $mail->finish();
+
+                return { handled => $handled };
+            }
+
+            sub retrain {
+                my $self = shift;
+                my $args = shift;
+
+                my $imap = $args->{imap};
+
+                $self->spam_assassin()->init_learner();
+                print STDERR "Training\n";
+
+                # Train the spam filter
+                $imap->select( $self->learn_spam_folder() );
+                print STDERR "Learning Spam\n";
+                my @messages = reverse( $imap->messages() );
+                foreach my $message_id (@messages) {
+                    my $message = OwlPost::Models::Message->new(
+                        {
+                            id     => $message_id,
+                            folder => $self->learn_spam_folder(),
+                            imap   => $imap,
+                        }
+                    );
+                    print STDERR $message->id(), " - ", $message->subject(),
+                      "\n";
+                    my $mail =
+                      $self->spam_assassin()->parse( $message->raw_message() );
+                    my $status =
+                      $self->spam_assassin()->learn( $mail, undef, 1, 0 );
+                    $message->move( $self->spam_folder() );
+                    $imap->expunge();
+                    $status->finish();
+                }
+
+                $imap->select( $self->learn_ham_folder() );
+                print STDERR "Learning Ham\n";
+                @messages = reverse( $imap->messages() );
+                foreach my $message_id (@messages) {
+                    my $message = OwlPost::Models::Message->new(
+                        {
+                            id     => $message_id,
+                            folder => $self->learn_ham_folder(),
+                            imap   => $imap,
+                        }
+                    );
+                    print STDERR $message->id(), " - ", $message->subject(),
+                      "\n";
+                    my $mail =
+                      $self->spam_assassin()->parse( $message->raw_message() );
+                    my $status =
+                      $self->spam_assassin()->learn( $mail, undef, 0, 0 );
+                    $message->move( $self->ham_folder() );
+                    $imap->expunge();
+                    $status->finish();
+                }
+                $self->spam_assassin()->rebuild_learner_caches();
+                $self->spam_assassin()->finish_learner();
+
+                return;
+            }
+          </code></pre>
+        </section>
+        <section>
+          <h2>Docker!</h2>
+          <pre><code>
+              FROM perl:5.24
+
+              ### Moo/Moose
+              run cpanm --install namespace::autoclean
+              run cpanm --install Moo
+              run cpanm --install Moose
+
+              ### IMAP Client
+              run cpanm --install Mail::IMAPClient
+
+              ### DateTime
+              run cpanm --install DateTime
+              run cpanm --install DateTime::Format::Mail
+
+              ### Spam Assasin
+              ## Required
+              run cpanm --install HTML::Parser
+              run cpanm --install Net::DNS
+              run cpanm --install NetAddr::IP
+
+              ## Optional
+              run cpanm --install Digest::SHA1
+              #run cpanm --install Mail::SPF::Test
+              #run cpanm --install Mail::SPF
+              run cpanm --install Geo::IP
+              run cpanm --install Net::CIDR::Lite
+              #run cpanm --install Razor2
+              run cpanm --install IO::Socket::INET6
+              run cpanm --install IO::Socket::SSL
+              run cpanm --install Mail::DKIM
+              run cpanm --install DBI
+              run cpanm --install LWP::UserAgent
+              run cpanm --install HTTP::Date
+              run cpanm --install Encode::Detect::Detector
+              run cpanm --install Net::Patricia
+              run cpanm --install Net::DNS::Nameserver
+
+              ## Spam Assasin itself
+              run cpanm --install Mail::SpamAssassin
+
+              run sa-update
+
+              ENV HOME=/usr/src/owl-post
+              RUN mkdir $HOME
+              COPY . $HOME
+              WORKDIR $HOME
+
+              CMD [ "perl", "./process-mail.pl" ]
+          </code></pre>
+        </section>
+        <section>
+          <h2>Docker!</h2>
+          <pre><code>
+              version: '2'
+              services:
+                  owl-post:
+                      build: .
+                      volumes:
+                      - .:/usr/src/owl-post
+                      command: perl ./process_mail.pl              
+          </code></pre>
+        </section>
+        <section>
+          <h2>demo</h2>
+        </section>
+        <section>
+          <h2>questions</h2>
+        </section>
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+
+    <script>
+      
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+      
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+      
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+      
+    </script>
+    
+  </body>
+</html>
