@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    
+    <title>Let's Encrypt</title>
+    
+    <meta name="description" content="Let's Encrypt">
+    <meta name="author" content="Jed Cunningham">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/reveal.css">
+    <link rel="stylesheet" href="../reveal.js-3.1.0/css/theme/league.css" id="theme">
+    
+    <!-- Code syntax highlighting -->
+    <link rel="stylesheet" href="../reveal.js-3.1.0/lib/css/zenburn.css">
+    
+    <!-- Printing and PDF exports -->
+    <script>
+      var link = document.createElement( 'link' );
+      link.rel = 'stylesheet';
+      link.type = 'text/css';
+      link.href = window.location.search.match( /print-pdf/gi ) ? '../reveal.js-3.1.0/css/print/pdf.css' : '../reveal.js-3.1.0/css/print/paper.css';
+      document.getElementsByTagName( 'head' )[0].appendChild( link );
+    </script>
+    
+    <!--[if lt IE 9]>
+	<script src="../reveal.js-3.1.0/lib/js/html5shiv.js"></script>
+	<![endif]-->
+  </head>
+  
+  <body>
+    
+    <div class="reveal">
+      
+      <!-- Any section element inside of this container is displayed as a slide -->
+      <div class="slides">
+	<section>
+	  <h2>Let's Encrypt</h2>
+	  <p>
+	    <small>Jed Cunningham</small>
+	  </p>
+	</section>
+
+        <section>
+          <h2>Problem</h2>
+          <p>
+            Browser trusted certs cost $$
+          </p>
+        </section>
+        
+	<section>
+	  <h2>Let's Encrypt CA</h2>
+            <ul>
+              <li>Non-profit</li>
+              <li>Wants to increase adoption of HTTPS</li>
+              <li>Free, 90 day certs
+                <ul>
+                    <li>Encourages automation for renewal</li>
+                    <li>Less bad if key gets lost/stolen</li>
+                </ul>
+              </li>
+            </ul>
+	</section>
+        <section>
+          <h2>stats</h2>
+			<p><a href="https://letsencrypt.org/stats/">Let's Encrypt Stats</a>
+        </section>
+        <section>
+          <h2>ACME Clients</h2>
+            <ul>
+              <li><a href="https://certbot.eff.org/">certbot</a> (official client)</li>
+              <li>Bash</li>
+              <li>Browser (e.g. <a href="https://zerossl.com/">ZeroSSL</a> powered by perl)</li>
+              <li>Perl (<a href="https://metacpan.org/pod/Mojo::ACME">Mojo::ACME</a>, <a href="https://metacpan.org/pod/Net::ACME">Net::ACME</a>)</li>
+              <li>...</li>
+            </ul>
+            <p><a href="https://letsencrypt.org/docs/client-options/">Full list</a></p>
+        </section>
+        <section>
+          <h2>ACME spec</h2>
+          <p>Automatic Certificate Management Environment (ACME)</p>
+          <ul>
+            <li>Domain Validation (dns record or http resource)</li>
+            <li>Cert issuance/revocation</li>
+          </ul>
+        </section>
+        <section>
+          <h2>certbot</h2>
+          <pre><code>
+$ sudo apt-get install certbot -t jessie-backports
+$ sudo certbot certonly --standalone --staging -d example.com
+
+# /etc/letsencrypt/live/example.com/fullchain.pem
+          </code></pre>
+        </section>
+        <section>
+          <h2>nginx</h2>
+          <pre><code>
+# SSL configuration
+#
+listen 443 ssl default_server;
+listen [::]:443 ssl default_server;
+ssl on;
+ssl_certificate         /etc/letsencrypt/live/example.com/fullchain.pem;
+ssl_certificate_key     /etc/letsencrypt/live/example.com/privkey.pem;
+ssl_protocols           TLSv1 TLSv1.1 TLSv1.2;
+ssl_ciphers             HIGH:!aNULL:!MD5;
+          </code></pre>
+        </section>
+        <section>
+          <h2>Check our work</h2>
+          <p><a href="https://www.ssllabs.com/ssltest/index.html">Qualys SSL Labs</a></p>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Renewal</h2>
+          <pre><code>
+certbot renew
+          </code></pre>
+        </section>
+        <section>
+          <h2>More automatic</h2>
+		  <p>Will even configure your webserver!</p>
+		  <ul>
+			<li>Apache</li>
+			<li>nginx</li>
+		  </ul>
+        </section>
+        <section>
+          <h2>Behind firewall</h2>
+		  <ul>
+			<li>split dns, copy cert to internal server</li>
+			<li>use the dns challenge with certbot</li>
+		  </ul>
+          <pre><code>
+certbot certonly --manual
+          </code></pre>
+		  <p>Note: Let's Encrypt has a public list of every cert it issued</p>
+        </section>
+      </div>
+    </div>
+
+    <script src="../reveal.js-3.1.0/lib/js/head.min.js"></script>
+    <script src="../reveal.js-3.1.0/js/reveal.js"></script>
+
+    <script>
+      
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+      controls: true,
+      progress: true,
+      history: true,
+      center: true,
+      
+      transition: 'slide', // none/fade/slide/convex/concave/zoom
+      
+      // Optional reveal.js plugins
+      dependencies: [
+      { src: '../reveal.js-3.1.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: '../reveal.js-3.1.0/plugin/highlight/highlight.js', async: true, condition: function() { return !!document.querySelector( 'pre code' ); }, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: '../reveal.js-3.1.0/plugin/zoom-js/zoom.js', async: true },
+      { src: '../reveal.js-3.1.0/plugin/notes/notes.js', async: true }
+      ]
+      });
+      
+    </script>
+    
+  </body>
+</html>
